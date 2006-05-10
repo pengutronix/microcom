@@ -47,8 +47,8 @@ init_comm(struct termios *pts, int speed)
 	 *  no NL -> CR/NL mapping on output, and
 	 *  no CR -> NL mapping on input.
 	 */
-	pts->c_oflag |= ONLCR;
-	crnl_mapping = 1;
+	pts->c_oflag &= ~ONLCR;
+	crnl_mapping = 0;
 	pts->c_iflag &= ~ICRNL;
 
 	/* set hardware flow control by default */
