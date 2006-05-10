@@ -50,8 +50,10 @@ mux_loop(int pf)
 			i = read(pf, buf, BUFSIZE);
 			if (i > 0) {
 				write(STDOUT_FILENO, buf, i);
-				if (dolog)
+				if (dolog) {
 					fwrite(buf, 1, i, flog);
+					fflush(flog);
+				}
 			} else
 				done = 1;
 		}
