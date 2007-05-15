@@ -76,12 +76,14 @@ help_escape(void)
 	char str1[] =
 	    "\n"
 	    "**********Help***********\n"
-	    "  x - exit microcom\n" "  b - send break\n";
+	    "  x - exit microcom\n"
+	    "  q - quit microcom\n"
+	    "  b - send break\n";
 
 	char str2[] =
 	    "  t - set terminal\n"
 	    "  w - send window size\n"
-	    "  q - quit help\n" "*************************\n" "Command: ";
+	    "  e - exit help\n" "*************************\n" "Command: ";
 
 	write(STDOUT_FILENO, str1, strlen(str1));
 
@@ -145,12 +147,11 @@ help_send_escape(int fd, char c)
 	help_state = 0;
 
 	switch (c) {
+	case 'q':		/* quit help */
 	case 'x':
 		/* restore termios settings and exit */
 		write(STDOUT_FILENO, "\n", 1);
 		cleanup_termios(0);
-		break;
-	case 'q':		/* quit help */
 		break;
 	case 'l':		/* log on/off */
 		dolog = (dolog == 0) ? 1 : 0;
@@ -184,10 +185,10 @@ help_send_escape(int fd, char c)
 		sz = sprintf(buf, "stty rows %d cols %d\n",win.ws_row,win.ws_col);
 		write(fd, &buf, sz);
 		break;
+	case 'e':
+		break;
 	default:
-		/* pass the character through */
-		/* "C-\ C-\" sends "C-\" */
-		write(fd, &c, 1);
+		printf("unknown command '%c'\n",c);
 		break;
 	}
 
