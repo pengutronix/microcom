@@ -26,6 +26,9 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <arpa/telnet.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <string.h>
 
 int crnl_mapping;		//0 - no mapping, 1 mapping
 int dolog = 0;			/* log active flag */
@@ -272,7 +275,7 @@ int main(int argc, char *argv[])
 				main_usage(1, "", "");
 				exit(0);
 			case 'p':
-				strncpy(device, optarg, MAX_DEVICE_NAME);
+				device = optarg;
 				break;
 			case 's':
 				speed = strtoul(optarg, NULL, 0);
@@ -293,7 +296,8 @@ int main(int argc, char *argv[])
 		struct sockaddr_in server_in;
 		char *host = hostport;
 		char *portstr;
-		int port;
+		int port = 23;
+		struct hostent *hp;
 
 		ios = &telnet_ops;
 
@@ -304,6 +308,14 @@ int main(int argc, char *argv[])
 			port = atoi(portstr);
 		}
 
+		hp = gethostbyname(host);
+		if (!hp) {
+			perror("gethostbyname");
+			exit(1);
+		}
+
+		host = inet_ntoa(*(struct in_addr*)(hp->h_addr_list[0]));
+	
 		memset(&server_in, 0, sizeof(server_in));     /* Zero out structure */
 		server_in.sin_family      = AF_INET;             /* Internet address family */
 		server_in.sin_addr.s_addr = inet_addr(host);   /* Server IP address */
@@ -317,7 +329,7 @@ int main(int argc, char *argv[])
 
 		/* Establish the connection to the echo server */
 		if (connect(sock, (struct sockaddr *) &server_in, sizeof(server_in)) < 0) {
-			printf("connect() failed\n");
+			perror("connect");
 			exit(1);
 		}
 		pf = sock;
@@ -343,7 +355,11 @@ int main(int argc, char *argv[])
 			exit(1);
 
 	ios->set_speed(pf, speed);
+
 	ios->set_flow(pf, FLOW_NONE);
+
+	printf("Escape character: Ctrl-\\\n");
+	printf("Type the escape character followed by c to get to the menu or q to quit\n");
 
 	/* Now deal with the local terminal side */
 	tcgetattr(STDIN_FILENO, &sts);
