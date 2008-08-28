@@ -24,42 +24,16 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
-#include <arpa/telnet.h>
-#include <netinet/in.h>
-#include <netdb.h>
 #include <string.h>
 
-int crnl_mapping;		//0 - no mapping, 1 mapping
 int dolog = 0;			/* log active flag */
 FILE *flog;			/* log file */
 int pf = 0;			/* port file descriptor */
-struct termios pots;		/* old port termios settings to restore */
 struct termios sots;		/* old stdout/in termios settings to restore */
 
 int telnet = 0;
 struct ios_ops *ios;
 int debug = 0;
-
-static void init_comm(struct termios *pts)
-{
-	/* some things we want to set arbitrarily */
-	pts->c_lflag &= ~ICANON;
-	pts->c_lflag &= ~(ECHO | ECHOCTL | ECHONL);
-	pts->c_cflag |= HUPCL;
-	pts->c_iflag |= IGNBRK;
-	pts->c_cc[VMIN] = 1;
-	pts->c_cc[VTIME] = 0;
-
-	/* Standard CR/LF handling: this is a dumb terminal.
-	 * Do no translation:
-	 *  no NL -> CR/NL mapping on output, and
-	 *  no CR -> NL mapping on input.
-	 */
-	pts->c_oflag &= ~ONLCR;
-	crnl_mapping = 0;
-	pts->c_iflag &= ~ICRNL;
-}
 
 void init_stdin(struct termios *sts)
 {
@@ -128,89 +102,21 @@ int flag_to_baudrate(speed_t speed)
 	}
 }
 
-int serial_set_speed(int fd, speed_t speed)
+void microcom_exit(int signal)
 {
-	struct termios pts;	/* termios settings on port */
+	printf("exiting\n");
 
-	tcgetattr(fd, &pts);
-	cfsetospeed(&pts, speed);
-	cfsetispeed(&pts, speed);
-	tcsetattr(fd, TCSANOW, &pts);
-
-	return 0;
-}
-
-int serial_set_flow(int fd, int flow)
-{
-	struct termios pts;	/* termios settings on port */
-	tcgetattr(fd, &pts);
-
-	switch (flow) {
-	case FLOW_NONE:
-		/* no flow control */
-		pts.c_cflag &= ~CRTSCTS;
-		pts.c_iflag &= ~(IXON | IXOFF | IXANY);
-		break;
-	case FLOW_HARD:
-		/* hardware flow control */
-		pts.c_cflag |= CRTSCTS;
-		pts.c_iflag &= ~(IXON | IXOFF | IXANY);
-		break;
-	case FLOW_SOFT:
-		/* software flow control */
-		pts.c_cflag &= ~CRTSCTS;
-		pts.c_iflag |= IXON | IXOFF | IXANY;
-		break;
+	/* close the log file first */
+	if (dolog) {
+		fflush(flog);
+		fclose(flog);
 	}
 
-	tcsetattr(fd, TCSANOW, &pts);
+	ios->exit(ios);
+	tcsetattr(STDIN_FILENO, TCSANOW, &sots);
 
-	return 0;
+	exit(0);
 }
-
-struct ios_ops serial_ops = {
-	.set_speed = serial_set_speed,
-	.set_flow = serial_set_flow,
-};
-
-int telnet_set_speed(int fd, speed_t speed)
-{
-
-//	unsigned char buf1[] = {IAC, WILL , COM_PORT_OPTION};
-	unsigned char buf2[] = {IAC, SB, COM_PORT_OPTION, SET_BAUDRATE_CS, 0, 0, 0, 0, IAC, SE};
-	int *speedp = (int *)&buf2[4];
-
-//	write(fd, buf1, 3);
-	*speedp = htonl(flag_to_baudrate(speed));
-	write(fd, buf2, 10);
-}
-
-int telnet_set_flow(int fd, int flow)
-{
-	unsigned char buf2[] = {IAC, SB, COM_PORT_OPTION, SET_CONTROL_CS, 0, IAC, SE};
-
-	switch (flow) {
-	case FLOW_NONE:
-		/* no flow control */
-		buf2[4] = 1;
-		break;
-	case FLOW_SOFT:
-		/* software flow control */
-		buf2[4] = 2;
-		break;
-	case FLOW_HARD:
-		/* hardware flow control */
-		buf2[4] = 3;
-		break;
-	}
-	write(fd, buf2, sizeof(buf2));
-
-}
-
-struct ios_ops telnet_ops = {
-	.set_speed = telnet_set_speed,
-	.set_flow = telnet_set_flow,
-};
 
 /********************************************************************
  Main functions
@@ -238,25 +144,11 @@ void main_usage(int exitcode, char *str, char *dev)
 	exit(exitcode);
 }
 
-/* restore original terminal settings on exit */
-void cleanup_termios(int signal)
-{
-	/* cloase the log file first */
-	if (dolog) {
-		fflush(flog);
-		fclose(flog);
-	}
-	tcsetattr(pf, TCSANOW, &pots);
-	tcsetattr(STDIN_FILENO, TCSANOW, &sots);
-	exit(0);
-}
-
 int main(int argc, char *argv[])
 {
-	struct termios pts;	/* termios settings on port */
 	struct termios sts;	/* termios settings on stdout/in */
 	struct sigaction sact;	/* used to initialize the signal handler */
-	int opt,i, speed = DEFAULT_BAUDRATE;
+	int opt, speed = DEFAULT_BAUDRATE;
 	char *hostport;
 	char *device = DEFAULT_DEVICE;
 
@@ -291,72 +183,21 @@ int main(int argc, char *argv[])
 
 	printf("*** Welcome to microcom ***\n");
 
-	if (telnet) {
-		int sock;
-		struct sockaddr_in server_in;
-		char *host = hostport;
-		char *portstr;
-		int port = 23;
-		struct hostent *hp;
+	if (telnet)
+		ios = telnet_init(hostport);
+	else
+		ios = serial_init(device);
 
-		ios = &telnet_ops;
-
-		portstr = strchr(hostport, ':');
-		if (portstr) {
-			*portstr = 0;
-			portstr++;
-			port = atoi(portstr);
-		}
-
-		hp = gethostbyname(host);
-		if (!hp) {
-			perror("gethostbyname");
-			exit(1);
-		}
-
-		host = inet_ntoa(*(struct in_addr*)(hp->h_addr_list[0]));
-	
-		memset(&server_in, 0, sizeof(server_in));     /* Zero out structure */
-		server_in.sin_family      = AF_INET;             /* Internet address family */
-		server_in.sin_addr.s_addr = inet_addr(host);   /* Server IP address */
-		server_in.sin_port        = htons(port); /* Server port */
-
-		sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-		if (sock < 0) {
-			printf("socket() failed\n");
-			exit(1);
-		}
-
-		/* Establish the connection to the echo server */
-		if (connect(sock, (struct sockaddr *) &server_in, sizeof(server_in)) < 0) {
-			perror("connect");
-			exit(1);
-		}
-		pf = sock;
-		printf("connected to %s (port %d)\n", host, port);
-	} else {
-		ios = &serial_ops;
-
-		/* open the device */
-		pf = open(device, O_RDWR);
-		if (pf < 0)
-			main_usage(2, "cannot open device", device);
-
-		/* modify the port configuration */
-		tcgetattr(pf, &pts);
-		memcpy(&pots, &pts, sizeof (pots));
-		init_comm(&pts);
-		tcsetattr(pf, TCSANOW, &pts);
-		printf("connected to %s\n", device);
-	}
+	if (!ios)
+		exit(1);
 
 	speed = baudrate_to_flag(speed);
 		if (speed < 0)
 			exit(1);
 
-	ios->set_speed(pf, speed);
+	ios->set_speed(ios, speed);
 
-	ios->set_flow(pf, FLOW_NONE);
+	ios->set_flow(ios, FLOW_NONE);
 
 	printf("Escape character: Ctrl-\\\n");
 	printf("Type the escape character followed by c to get to the menu or q to quit\n");
@@ -369,21 +210,15 @@ int main(int argc, char *argv[])
 
 	/* set the signal handler to restore the old
 	 * termios handler */
-	sact.sa_handler = cleanup_termios;
+	sact.sa_handler = &microcom_exit;
 	sigaction(SIGHUP, &sact, NULL);
 	sigaction(SIGINT, &sact, NULL);
 	sigaction(SIGPIPE, &sact, NULL);
 	sigaction(SIGTERM, &sact, NULL);
 
 	/* run thhe main program loop */
-	mux_loop(pf);
+	mux_loop(ios);
 
-	if (!telnet) {
-		/* restore original terminal settings and exit */
-		tcsetattr(pf, TCSANOW, &pots);
-		tcsetattr(STDIN_FILENO, TCSANOW, &sots);
-	}
-
-	exit(0);
-
+	/* not reached */
+	return 0;
 }

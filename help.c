@@ -31,14 +31,6 @@ extern int telnet;
 static int help_state = 0;
 static int in_escape = 0;
 
-/* static functions proto-types */
-static void help_usage(int exitcode, char *error, char *addl);
-static void help_escape(void);
-static void help_terminal(void);
-static void help_speed(void);
-static void help_send_escape(int fd, char c);
-static void help_done(void);
-
 /******************************************************************
  Help handling functions
 *******************************************************************
@@ -65,15 +57,13 @@ static void help_done(void);
         - buf - pointer to the character buffer
         - num - number of valid characters in the buffer
 ******************************************************************/
-static void
-help_done(void)
+static void help_done(void)
 {
 	char done_str[] = "Help done!\n";
 	write(STDOUT_FILENO, done_str, strlen(done_str));
 }
 
-static void
-help_escape(void)
+static void help_escape(void)
 {
 	char str1[] =
 	    "\n"
@@ -97,8 +87,7 @@ help_escape(void)
 	write(STDOUT_FILENO, str2, strlen(str2));
 }
 
-static void
-help_terminal(void)
+static void help_terminal(void)
 {
 	char str1[] = "\n" "******Set terminal ******\n" "  p - set speed\n";
 
@@ -116,8 +105,7 @@ help_terminal(void)
 	write(STDOUT_FILENO, str2, strlen(str2));
 }
 
-static void
-help_speed(void)
+static void help_speed(void)
 {
 	char str[] =
 	    "\n******Set speed *********\n"
@@ -137,10 +125,8 @@ help_speed(void)
 }
 
 /* process function for help_state=0 */
-static void
-help_send_escape(int fd, char c)
+static void help_send_escape(struct ios_ops *ios, char c)
 {
-	struct termios pts;	/* termios settings on port */
 	struct winsize win;
 	char buf[100];
 	int sz;
@@ -153,7 +139,7 @@ help_send_escape(int fd, char c)
 	case 'x':
 		/* restore termios settings and exit */
 		write(STDOUT_FILENO, "\n", 1);
-		cleanup_termios(0);
+		microcom_exit(0);
 		break;
 	case 'l':		/* log on/off */
 		dolog = (dolog == 0) ? 1 : 0;
@@ -170,7 +156,7 @@ help_send_escape(int fd, char c)
 		break;
 	case 'b':		/* send break */
 		/* send a break */
-		tcsendbreak(fd, 0);
+		tcsendbreak(ios->fd, 0);
 		break;
 	case 't':		/* set terminal */
 		help_state = 1;
@@ -184,8 +170,8 @@ help_send_escape(int fd, char c)
 		if(ioctl(0, TIOCGWINSZ, &win))
 			break;
 
-		sz = sprintf(buf, "stty rows %d cols %d\n",win.ws_row,win.ws_col);
-		write(fd, &buf, sz);
+		sz = sprintf(buf, "stty rows %d cols %d\n", win.ws_row, win.ws_col);
+		write(ios->fd, &buf, sz);
 		break;
 	case 'e':
 		break;
@@ -201,11 +187,10 @@ help_send_escape(int fd, char c)
 }
 
 /* process function for help_state=1 */
-static void
-help_set_terminal(int fd, char c)
+static void help_set_terminal(struct ios_ops *ios, char c)
 {
 	struct termios pts;	/* termios settings on port */
-	tcgetattr(fd, &pts);
+	tcgetattr(ios->fd, &pts);
 	switch (c) {
 	case 'm':		/* CR/NL mapping */
 		in_escape = 0;	/* get it out from escape state */
@@ -217,7 +202,7 @@ help_set_terminal(int fd, char c)
 			pts.c_oflag |= ONLCR;
 			crnl_mapping = 1;
 		}
-		tcsetattr(fd, TCSANOW, &pts);
+		tcsetattr(ios->fd, TCSANOW, &pts);
 		break;
 	case 'p':		/* port speed */
 		in_escape = 1;
@@ -227,20 +212,20 @@ help_set_terminal(int fd, char c)
 	case 'h':		/* hardware flow control */
 		in_escape = 0;	/* get it out from escape state */
 		help_state = 0;
-		ios->set_flow(fd, FLOW_HARD);
+		ios->set_flow(ios, FLOW_HARD);
 		/* hardware flow control */
 		break;
 	case 's':		/* software flow contrlol */
 		in_escape = 0;	/* get it out from escape state */
 		help_state = 0;
-		ios->set_flow(fd, FLOW_SOFT);
+		ios->set_flow(ios, FLOW_SOFT);
 		/* software flow control */
 		break;
 	case 'n':		/* no flow control */
 		in_escape = 0;	/* get it out from escape state */
 		help_state = 0;
 		/* no flow control */
-		ios->set_flow(fd, FLOW_NONE);
+		ios->set_flow(ios, FLOW_NONE);
 		break;
 	case '~':
 	case 'q':
@@ -250,7 +235,7 @@ help_set_terminal(int fd, char c)
 	default:
 		/* pass the character through */
 		/* "C-\ C-\" sends "C-\" */
-		write(fd, &c, 1);
+		write(ios->fd, &c, 1);
 		break;
 	}
 
@@ -261,10 +246,8 @@ help_set_terminal(int fd, char c)
 }
 
 /* handle a single escape character */
-static void
-help_set_speed(int fd, char c)
+static void help_set_speed(struct ios_ops *ios, char c)
 {
-	struct termios pts;	/* termios settings on port */
 	speed_t speed[] = {
 		B1200,
 		B2400,
@@ -287,11 +270,11 @@ help_set_speed(int fd, char c)
 			in_escape = 0;
 			help_state = 0;
 		}
-		write(fd, &c, 1);
+		write(ios->fd, &c, 1);
 		return;
 	}
 
-	ios->set_speed(fd, speed[c - 'a']);
+	ios->set_speed(ios, speed[c - 'a']);
 
 	in_escape = 0;
 	help_state = 0;
@@ -299,8 +282,7 @@ help_set_speed(int fd, char c)
 }
 
 /* handle escape characters, writing to output */
-void
-cook_buf(int fd, char *buf, int num)
+void cook_buf(struct ios_ops *ios, unsigned char *buf, int num)
 {
 	int current = 0;
 
@@ -308,13 +290,13 @@ cook_buf(int fd, char *buf, int num)
 		/* cook_buf last called with an incomplete escape sequence */
 		switch (help_state) {
 		case 0:
-			help_send_escape(fd, buf[0]);
+			help_send_escape(ios, buf[0]);
 			break;
 		case 1:
-			help_set_terminal(fd, buf[0]);
+			help_set_terminal(ios, buf[0]);
 			break;
 		default:
-			help_set_speed(fd, buf[0]);
+			help_set_speed(ios, buf[0]);
 		}
 		num--;		/* advance to the next character in the buffer */
 		buf++;
@@ -327,7 +309,7 @@ cook_buf(int fd, char *buf, int num)
 			current++;
 		/* and write the sequence befor esc char to the comm port */
 		if (current)
-			write(fd, buf, current);
+			write(ios->fd, buf, current);
 
 		if (current < num) {	/* process an escape sequence */
 			/* found an escape character */
@@ -342,13 +324,13 @@ cook_buf(int fd, char *buf, int num)
 
 			switch (help_state) {
 			case 0:
-				help_send_escape(fd, buf[current]);
+				help_send_escape(ios, buf[current]);
 				break;
 			case 1:
-				help_set_terminal(fd, buf[current]);
+				help_set_terminal(ios, buf[current]);
 				break;
 			default:
-				help_set_speed(fd, buf[current]);
+				help_set_speed(ios, buf[current]);
 			}	/* end switch */
 			current++;
 			if (current >= num)

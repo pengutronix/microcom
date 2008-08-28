@@ -38,33 +38,40 @@
 #define DEFAULT_BAUDRATE 115200
 #define DEFAULT_DEVICE "/dev/ttyS0"
 
-void cook_buf(int fd, char *buf, int num); /* microcom.c */ 
-void mux_loop(int pf); /* mux.c */
-
 typedef enum {
-  S_TIMEOUT,		/* timeout */
-  S_DTE,		/* incoming data coming from kbd */
-  S_DCE,		/* incoming data from serial port */
-  S_MAX			/* not used - just for checking */
+	S_TIMEOUT,		/* timeout */
+	S_DTE,		/* incoming data coming from kbd */
+	S_DCE,		/* incoming data from serial port */
+	S_MAX			/* not used - just for checking */
 } S_ORIGINATOR;
 
 struct ios_ops {
-	int (*set_speed)(int fd, speed_t speed);
+	int (*set_speed)(struct ios_ops *, speed_t speed);
 #define FLOW_NONE	0
 #define FLOW_SOFT	1
 #define FLOW_HARD	2
-	int (*set_flow)(int fd, int flow);
+	int (*set_flow)(struct ios_ops *, int flow);
+	void (*exit)(struct ios_ops *);
+	int fd;
 };
 
-int script_process(S_ORIGINATOR orig, char* buf, int size); /* script.c */
-void script_init(char* s); /* script.c */
-void mux_clear_sflag(void); /* mus.c */
-void cleanup_termios(int signal);
-void init_stdin(struct termios *sts);
+void cook_buf(struct ios_ops *, unsigned char *buf, int num); /* microcom.c */ 
+void mux_loop(struct ios_ops *); /* mux.c */
+
+struct ios_ops *telnet_init(char *hostport);
+struct ios_ops *serial_init(char *dev);
+
+void microcom_exit(int signal);
+
 void main_usage(int exitcode, char *str, char *dev);
+
+int flag_to_baudrate(speed_t speed);
+speed_t baudrate_to_flag(int speed);
 
 extern struct ios_ops *ios;
 extern int debug;
+extern int dolog;
+extern FILE *flog;
 
 #define dprintf(fmt,args...)  ({ if (debug) printf (fmt ,##args); })
 

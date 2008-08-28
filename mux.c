@@ -19,14 +19,12 @@
 ****************************************************************************/
 #include "microcom.h"
 #include <arpa/telnet.h>
+#include <arpa/inet.h>
 
 #define SCRIPT_DELAY 1
 #define BUFSIZE 1024
 
-extern int dolog;
-extern FILE *flog;
-
-int do_com_port_option(unsigned char *buf, int len)
+static int do_com_port_option(unsigned char *buf, int len)
 {
 	int i = 0;
 
@@ -120,7 +118,7 @@ int do_com_port_option(unsigned char *buf, int len)
 	return len;
 }
 
-int do_subneg(unsigned char *buf, int len)
+static int do_subneg(unsigned char *buf, int len)
 {
 	int i = 0;
 
@@ -142,9 +140,9 @@ int do_subneg(unsigned char *buf, int len)
 	return len;
 }
 
-int handle_command(unsigned char *buf, int len)
+static int handle_command(unsigned char *buf, int len)
 {
-	int i = 0, a;
+	int i = 0;
 
 	while (i < len) {
 		switch (buf[i]) {
@@ -185,8 +183,7 @@ int handle_command(unsigned char *buf, int len)
 }
 
 /* main program loop */
-void
-mux_loop(int pf)
+void mux_loop(struct ios_ops *ios)
 {
 	fd_set ready;		/* used for select */
 	int i = 0, len;		/* used in the multiplex loop */
@@ -200,14 +197,14 @@ mux_loop(int pf)
 	do {			/* forever */
 		FD_ZERO(&ready);
 		FD_SET(STDIN_FILENO, &ready);
-		FD_SET(pf, &ready);
+		FD_SET(ios->fd, &ready);
 
-		select(pf + 1, &ready, NULL, NULL, NULL);
+		select(ios->fd + 1, &ready, NULL, NULL, NULL);
 
-		if (FD_ISSET(pf, &ready)) {
+		if (FD_ISSET(ios->fd, &ready)) {
 			i = 0;
 			/* pf has characters for us */
-			len = read(pf, buf, BUFSIZE);
+			len = read(ios->fd, buf, BUFSIZE);
 			if (len > 0) {
 				if (*buf == IAC)
 					i = handle_command(buf, len);
@@ -219,14 +216,13 @@ mux_loop(int pf)
 			} else
 				done = 1;
 		}
-		/* if */
 		if (FD_ISSET(STDIN_FILENO, &ready)) {
 			/* standard input has characters for us */
 			i = read(STDIN_FILENO, buf, BUFSIZE);
 			if (i > 0)
-				cook_buf(pf, buf, i);
+				cook_buf(ios, buf, i);
 			else
 				done = 1;
-		}		/* if */
-	} while (!done);	/* do */
+		}
+	} while (!done);
 }
