@@ -20,11 +20,13 @@
 #include "microcom.h"
 
 #include <sys/ioctl.h>
+#include <arpa/telnet.h>
 
 extern int crnl_mapping;	//0 - no mapping, 1 mapping
 extern char device[MAX_DEVICE_NAME];	/* serial device name */
 extern int dolog;			/* log active flag */
 extern FILE *flog;		/* log file */
+extern int telnet;
 
 static int help_state = 0;
 static int in_escape = 0;
@@ -225,26 +227,20 @@ help_set_terminal(int fd, char c)
 	case 'h':		/* hardware flow control */
 		in_escape = 0;	/* get it out from escape state */
 		help_state = 0;
+		ios->set_flow(fd, FLOW_HARD);
 		/* hardware flow control */
-		pts.c_cflag |= CRTSCTS;
-		pts.c_iflag &= ~(IXON | IXOFF | IXANY);
-		tcsetattr(fd, TCSANOW, &pts);
 		break;
 	case 's':		/* software flow contrlol */
 		in_escape = 0;	/* get it out from escape state */
 		help_state = 0;
+		ios->set_flow(fd, FLOW_SOFT);
 		/* software flow control */
-		pts.c_cflag &= ~CRTSCTS;
-		pts.c_iflag |= IXON | IXOFF | IXANY;
-		tcsetattr(fd, TCSANOW, &pts);
 		break;
 	case 'n':		/* no flow control */
 		in_escape = 0;	/* get it out from escape state */
 		help_state = 0;
 		/* no flow control */
-		pts.c_cflag &= ~CRTSCTS;
-		pts.c_iflag &= ~(IXON | IXOFF | IXANY);
-		tcsetattr(fd, TCSANOW, &pts);
+		ios->set_flow(fd, FLOW_NONE);
 		break;
 	case '~':
 	case 'q':
@@ -282,6 +278,7 @@ help_set_speed(int fd, char c)
 		B460800
 	};
 
+
 	if (c < 'a' && c > 'j') {
 		if (c == '~') {
 			help_speed();
@@ -294,10 +291,8 @@ help_set_speed(int fd, char c)
 		return;
 	}
 
-	tcgetattr(fd, &pts);
-	cfsetospeed(&pts, speed[c - 'a']);
-	cfsetispeed(&pts, speed[c - 'a']);
-	tcsetattr(fd, TCSANOW, &pts);
+	ios->set_speed(fd, speed[c - 'a']);
+
 	in_escape = 0;
 	help_state = 0;
 	help_done();

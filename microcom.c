@@ -23,17 +23,22 @@
 
 #include <unistd.h>
 #include <getopt.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <arpa/telnet.h>
 
 int crnl_mapping;		//0 - no mapping, 1 mapping
-char device[MAX_DEVICE_NAME];	/* serial device name */
 int dolog = 0;			/* log active flag */
 FILE *flog;			/* log file */
 int pf = 0;			/* port file descriptor */
 struct termios pots;		/* old port termios settings to restore */
 struct termios sots;		/* old stdout/in termios settings to restore */
 
-void
-init_comm(struct termios *pts, int speed)
+int telnet = 0;
+struct ios_ops *ios;
+int debug = 0;
+
+static void init_comm(struct termios *pts)
 {
 	/* some things we want to set arbitrarily */
 	pts->c_lflag &= ~ICANON;
@@ -51,17 +56,9 @@ init_comm(struct termios *pts, int speed)
 	pts->c_oflag &= ~ONLCR;
 	crnl_mapping = 0;
 	pts->c_iflag &= ~ICRNL;
-
-	/* set hardware flow control by default */
-	pts->c_cflag &= ~CRTSCTS;
-	pts->c_iflag &= ~(IXON | IXOFF | IXANY);
-
-	cfsetospeed(pts, speed);
-	cfsetispeed(pts, speed);
 }
 
-void
-init_stdin(struct termios *sts)
+void init_stdin(struct termios *sts)
 {
 	/* again, some arbitrary things */
 	sts->c_iflag &= ~BRKINT;
@@ -73,6 +70,144 @@ init_stdin(struct termios *sts)
 	/* no local echo: allow the other end to do the echoing */
 	sts->c_lflag &= ~(ECHO | ECHOCTL | ECHONL);
 }
+
+speed_t baudrate_to_flag(int speed)
+{
+	switch(speed) {
+	case 50: return B50;
+	case 75: return B75;
+	case 110: return B110;
+	case 134: return B134;
+	case 150: return B150;
+	case 200: return B200;
+	case 300: return B300;
+	case 600: return B600;
+	case 1200: return B1200;
+	case 1800: return B1800;
+	case 2400: return B2400;
+	case 4800: return B4800;
+	case 9600: return B9600;
+	case 19200: return B19200;
+	case 38400: return B38400;
+	case 57600: return B57600;
+	case 115200: return B115200;
+	case 230400: return B230400;
+	default:
+		printf("unknown speed: %d\n",speed);
+		return -1;
+	}
+}
+
+int flag_to_baudrate(speed_t speed)
+{
+	switch(speed) {
+	case B50: return 50;
+	case B75: return 75;
+	case B110: return 110;
+	case B134: return 134;
+	case B150: return 150;
+	case B200: return 200;
+	case B300: return 300;
+	case B600: return 600;
+	case B1200: return 1200;
+	case B1800: return 1800;
+	case B2400: return 2400;
+	case B4800: return 4800;
+	case B9600: return 9600;
+	case B19200: return 19200;
+	case B38400: return 38400;
+	case B57600: return 57600;
+	case B115200: return 115200;
+	case B230400: return 230400;
+	default:
+		printf("unknown speed: %d\n",speed);
+		return -1;
+	}
+}
+
+int serial_set_speed(int fd, speed_t speed)
+{
+	struct termios pts;	/* termios settings on port */
+
+	tcgetattr(fd, &pts);
+	cfsetospeed(&pts, speed);
+	cfsetispeed(&pts, speed);
+	tcsetattr(fd, TCSANOW, &pts);
+
+	return 0;
+}
+
+int serial_set_flow(int fd, int flow)
+{
+	struct termios pts;	/* termios settings on port */
+	tcgetattr(fd, &pts);
+
+	switch (flow) {
+	case FLOW_NONE:
+		/* no flow control */
+		pts.c_cflag &= ~CRTSCTS;
+		pts.c_iflag &= ~(IXON | IXOFF | IXANY);
+		break;
+	case FLOW_HARD:
+		/* hardware flow control */
+		pts.c_cflag |= CRTSCTS;
+		pts.c_iflag &= ~(IXON | IXOFF | IXANY);
+		break;
+	case FLOW_SOFT:
+		/* software flow control */
+		pts.c_cflag &= ~CRTSCTS;
+		pts.c_iflag |= IXON | IXOFF | IXANY;
+		break;
+	}
+
+	tcsetattr(fd, TCSANOW, &pts);
+
+	return 0;
+}
+
+struct ios_ops serial_ops = {
+	.set_speed = serial_set_speed,
+	.set_flow = serial_set_flow,
+};
+
+int telnet_set_speed(int fd, speed_t speed)
+{
+
+//	unsigned char buf1[] = {IAC, WILL , COM_PORT_OPTION};
+	unsigned char buf2[] = {IAC, SB, COM_PORT_OPTION, SET_BAUDRATE_CS, 0, 0, 0, 0, IAC, SE};
+	int *speedp = (int *)&buf2[4];
+
+//	write(fd, buf1, 3);
+	*speedp = htonl(flag_to_baudrate(speed));
+	write(fd, buf2, 10);
+}
+
+int telnet_set_flow(int fd, int flow)
+{
+	unsigned char buf2[] = {IAC, SB, COM_PORT_OPTION, SET_CONTROL_CS, 0, IAC, SE};
+
+	switch (flow) {
+	case FLOW_NONE:
+		/* no flow control */
+		buf2[4] = 1;
+		break;
+	case FLOW_SOFT:
+		/* software flow control */
+		buf2[4] = 2;
+		break;
+	case FLOW_HARD:
+		/* hardware flow control */
+		buf2[4] = 3;
+		break;
+	}
+	write(fd, buf2, sizeof(buf2));
+
+}
+
+struct ios_ops telnet_ops = {
+	.set_speed = telnet_set_speed,
+	.set_flow = telnet_set_flow,
+};
 
 /********************************************************************
  Main functions
@@ -87,23 +222,21 @@ init_stdin(struct termios *sts)
  int main(int argc, char *argv[]) -
       main program function
 ********************************************************************/
-void
-main_usage(int exitcode, char *str, char *dev)
+void main_usage(int exitcode, char *str, char *dev)
 {
 	fprintf(stderr, "Usage: microcom [options]\n"
 		" [options] include:\n"
-		"    -pdevfile       use the specified serial port device;\n"
-		"                    if a port is not provided, microcom\n"
-		"                        will try to autodetect a modem\n"
-		"           example: -p/dev/ttyS3\n"
-		"microcom provides session logging in microcom.log file\n");
+		"    -p devfile      use the specified serial port device (%s);\n"
+		"    -s speed        use specified baudrate (%d)\n"
+		"    -t host:port    work in telnet (rfc2217) mode\n"
+		"microcom provides session logging in microcom.log file\n",
+		DEFAULT_DEVICE, DEFAULT_BAUDRATE);
 	fprintf(stderr, "Exitcode %d - %s %s\n\n", exitcode, str, dev);
 	exit(exitcode);
 }
 
 /* restore original terminal settings on exit */
-void
-cleanup_termios(int signal)
+void cleanup_termios(int signal)
 {
 	/* cloase the log file first */
 	if (dolog) {
@@ -115,25 +248,25 @@ cleanup_termios(int signal)
 	exit(0);
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	struct termios pts;	/* termios settings on port */
 	struct termios sts;	/* termios settings on stdout/in */
 	struct sigaction sact;	/* used to initialize the signal handler */
-	int opt,i, speed;
-	int bspeed = B115200;
-
-	device[0] = '\0';
+	int opt,i, speed = DEFAULT_BAUDRATE;
+	char *hostport;
+	char *device = DEFAULT_DEVICE;
 
 	struct option long_options[] = {
 		{ "help", no_argument, 0, 'h' },
 		{ "port", required_argument, 0, 'p'},
 		{ "speed", required_argument, 0, 's'},
+		{ "telnet", required_argument, 0, 't'},
+		{ "debug", no_argument, 0, 'd' },
 		{ 0, 0, 0, 0},
 	};
 
-	while ((opt = getopt_long(argc, argv, "hp:s:", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "hp:s:t:d", long_options, NULL)) != -1) {
 		switch (opt) {
 			case 'h':
 				main_usage(1, "", "");
@@ -143,44 +276,74 @@ main(int argc, char *argv[])
 				break;
 			case 's':
 				speed = strtoul(optarg, NULL, 0);
-				printf("speed: %d\n",speed);
-				switch(speed) {
-					case 50: bspeed = B50; break;
-					case 75: bspeed = B75; break;
-					case 110: bspeed = B110; break;
-					case 134: bspeed = B134; break;
-					case 150: bspeed = B150; break;
-					case 200: bspeed = B200; break;
-					case 300: bspeed = B300; break;
-					case 600: bspeed = B600; break;
-					case 1200: bspeed = B1200; break;
-					case 1800: bspeed = B1800; break;
-					case 2400: bspeed = B2400; break;
-					case 4800: bspeed = B4800; break;
-					case 9600: bspeed = B9600; break;
-					case 19200: bspeed = B19200; break;
-					case 38400: bspeed = B38400; break;
-					case 57600: bspeed = B57600; break;
-					case 115200: bspeed = B115200; break;
-					case 230400: bspeed = B230400; break;
-					default:
-						printf("unknown speed: %d\n",speed);
-						exit(1);
-				}
 				break;
+			case 't':
+				telnet = 1;
+				hostport = optarg;
+				break;
+			case 'd':
+				debug = 1;
 		}
 	}
 
-	/* open the device */
-	pf = open(device, O_RDWR);
-	if (pf < 0)
-		main_usage(2, "cannot open device", device);
+	printf("*** Welcome to microcom ***\n");
 
-	/* modify the port configuration */
-	tcgetattr(pf, &pts);
-	memcpy(&pots, &pts, sizeof (pots));
-	init_comm(&pts, bspeed);
-	tcsetattr(pf, TCSANOW, &pts);
+	if (telnet) {
+		int sock;
+		struct sockaddr_in server_in;
+		char *host = hostport;
+		char *portstr;
+		int port;
+
+		ios = &telnet_ops;
+
+		portstr = strchr(hostport, ':');
+		if (portstr) {
+			*portstr = 0;
+			portstr++;
+			port = atoi(portstr);
+		}
+
+		memset(&server_in, 0, sizeof(server_in));     /* Zero out structure */
+		server_in.sin_family      = AF_INET;             /* Internet address family */
+		server_in.sin_addr.s_addr = inet_addr(host);   /* Server IP address */
+		server_in.sin_port        = htons(port); /* Server port */
+
+		sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+		if (sock < 0) {
+			printf("socket() failed\n");
+			exit(1);
+		}
+
+		/* Establish the connection to the echo server */
+		if (connect(sock, (struct sockaddr *) &server_in, sizeof(server_in)) < 0) {
+			printf("connect() failed\n");
+			exit(1);
+		}
+		pf = sock;
+		printf("connected to %s (port %d)\n", host, port);
+	} else {
+		ios = &serial_ops;
+
+		/* open the device */
+		pf = open(device, O_RDWR);
+		if (pf < 0)
+			main_usage(2, "cannot open device", device);
+
+		/* modify the port configuration */
+		tcgetattr(pf, &pts);
+		memcpy(&pots, &pts, sizeof (pots));
+		init_comm(&pts);
+		tcsetattr(pf, TCSANOW, &pts);
+		printf("connected to %s\n", device);
+	}
+
+	speed = baudrate_to_flag(speed);
+		if (speed < 0)
+			exit(1);
+
+	ios->set_speed(pf, speed);
+	ios->set_flow(pf, FLOW_NONE);
 
 	/* Now deal with the local terminal side */
 	tcgetattr(STDIN_FILENO, &sts);
@@ -199,9 +362,11 @@ main(int argc, char *argv[])
 	/* run thhe main program loop */
 	mux_loop(pf);
 
-	/* restore original terminal settings and exit */
-	tcsetattr(pf, TCSANOW, &pots);
-	tcsetattr(STDIN_FILENO, TCSANOW, &sots);
+	if (!telnet) {
+		/* restore original terminal settings and exit */
+		tcsetattr(pf, TCSANOW, &pots);
+		tcsetattr(STDIN_FILENO, TCSANOW, &sots);
+	}
 
 	exit(0);
 

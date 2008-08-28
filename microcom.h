@@ -35,6 +35,9 @@
 #define MAX_SCRIPT_NAME 20 /* maximum length of the name of the script file */
 #define MAX_DEVICE_NAME 20 /* maximum length of the name of the /dev comm port driver */
 
+#define DEFAULT_BAUDRATE 115200
+#define DEFAULT_DEVICE "/dev/ttyS0"
+
 void cook_buf(int fd, char *buf, int num); /* microcom.c */ 
 void mux_loop(int pf); /* mux.c */
 
@@ -45,14 +48,53 @@ typedef enum {
   S_MAX			/* not used - just for checking */
 } S_ORIGINATOR;
 
+struct ios_ops {
+	int (*set_speed)(int fd, speed_t speed);
+#define FLOW_NONE	0
+#define FLOW_SOFT	1
+#define FLOW_HARD	2
+	int (*set_flow)(int fd, int flow);
+};
+
 int script_process(S_ORIGINATOR orig, char* buf, int size); /* script.c */
 void script_init(char* s); /* script.c */
 void mux_clear_sflag(void); /* mus.c */
 void cleanup_termios(int signal);
 void init_stdin(struct termios *sts);
-void init_comm(struct termios *pts, int speed);
 void main_usage(int exitcode, char *str, char *dev);
-   
+
+extern struct ios_ops *ios;
+extern int debug;
+
+#define dprintf(fmt,args...)  ({ if (debug) printf (fmt ,##args); })
+
+/* RFC2217 */
+#define COM_PORT_OPTION		 44
+#define SET_BAUDRATE_CS		  1
+#define SET_DATASIZE_CS		  2
+#define SET_PARITY_CS		  3
+#define SET_STOPSIZE_CS		  4
+#define SET_CONTROL_CS		  5
+#define NOTIFY_LINESTATE_CS	  6
+#define NOTIFY_MODEMSTATE_CS	  7
+#define FLOWCONTROL_SUSPEND_CS	  8
+#define FLOWCONTROL_RESUME_CS	  9
+#define SET_LINESTATE_MASK_CS	 10
+#define SET_MODEMSTATE_MASK_CS	 11
+#define PURGE_DATA_CS		 12
+#define SET_BAUDRATE_SC		101
+#define SET_DATASIZE_SC		102
+#define SET_PARITY_SC		103
+#define SET_STOPSIZE_SC		104
+#define SET_CONTROL_SC		105
+#define NOTIFY_LINESTATE_SC	106
+#define NOTIFY_MODEMSTATE_SC	107
+#define FLOWCONTROL_SUSPEND_SC	108
+#define FLOWCONTROL_RESUME_SC	109
+#define SET_LINESTATE_MASK_SC	110
+#define SET_MODEMSTATE_MASK_SC	111
+#define PURGE_DATA_SC		112
+
 #endif /* MICROCOM_H */
 
 
