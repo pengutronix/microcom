@@ -1,9 +1,11 @@
+#include <limits.h>
 #include <arpa/telnet.h>
 
 #include "microcom.h"
 
 int crnl_mapping;		//0 - no mapping, 1 mapping
 struct termios pots;		/* old port termios settings to restore */
+char lockfile[PATH_MAX+1] = "/var/lock/LCK..";
 
 static void init_comm(struct termios *pts)
 {
@@ -71,6 +73,7 @@ static void serial_exit(struct ios_ops *ios)
 	tcsetattr(ios->fd, TCSANOW, &pots);
 	close(ios->fd);
 	free(ios);
+	unlink(lockfile);
 }
 
 struct ios_ops * serial_init(char *device)
@@ -78,6 +81,8 @@ struct ios_ops * serial_init(char *device)
 	struct termios pts;	/* termios settings on port */
 	struct ios_ops *ops;
 	int fd;
+	char *substring;
+	char pid_buf[32];
 
 	ops = malloc(sizeof(*ops));
 	if (!ops)
@@ -87,6 +92,28 @@ struct ios_ops * serial_init(char *device)
 	ops->set_flow = serial_set_flow;
 	ops->exit = serial_exit;
 
+	/* check lockfile */
+	substring = strrchr(device, '/');
+	if (substring)
+		substring++;
+	else
+		substring = device;
+		
+	strncat(lockfile, substring, PATH_MAX - strlen(lockfile) - 1);
+	
+	fd = open(lockfile, O_RDONLY);
+	if (fd >= 0) {
+		close(fd);
+		main_usage(3, "lockfile for port exists", device);
+	}
+	
+	fd = open(lockfile, O_RDWR | O_CREAT, 0444);
+	if (fd < 0)
+		main_usage(3, "cannot create lockfile", device);
+	snprintf(pid_buf, 32, "%ld", (long)getpid());
+	write(fd, pid_buf, sizeof(pid_t));
+	close(fd);	
+	
 	/* open the device */
 	fd = open(device, O_RDWR);
 	ops->fd = fd;
