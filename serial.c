@@ -98,22 +98,22 @@ struct ios_ops * serial_init(char *device)
 		substring++;
 	else
 		substring = device;
-		
+
 	strncat(lockfile, substring, PATH_MAX - strlen(lockfile) - 1);
-	
+
 	fd = open(lockfile, O_RDONLY);
 	if (fd >= 0) {
 		close(fd);
 		main_usage(3, "lockfile for port exists", device);
 	}
-	
+
 	fd = open(lockfile, O_RDWR | O_CREAT, 0444);
 	if (fd < 0)
 		main_usage(3, "cannot create lockfile", device);
 	snprintf(pid_buf, 32, "%ld", (long)getpid());
 	write(fd, pid_buf, sizeof(pid_t));
-	close(fd);	
-	
+	close(fd);
+
 	/* open the device */
 	fd = open(device, O_RDWR);
 	ops->fd = fd;
