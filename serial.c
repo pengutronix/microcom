@@ -82,7 +82,7 @@ struct ios_ops * serial_init(char *device)
 	struct ios_ops *ops;
 	int fd;
 	char *substring;
-	char pid_buf[32];
+	long pid;
 
 	ops = malloc(sizeof(*ops));
 	if (!ops)
@@ -110,8 +110,9 @@ struct ios_ops * serial_init(char *device)
 	fd = open(lockfile, O_RDWR | O_CREAT, 0444);
 	if (fd < 0)
 		main_usage(3, "cannot create lockfile", device);
-	snprintf(pid_buf, 32, "%ld", (long)getpid());
-	write(fd, pid_buf, sizeof(pid_t));
+	/* Kermit wants binary pid */
+	pid = getpid();
+	write(fd, &pid, sizeof(long));
 	close(fd);
 
 	/* open the device */
