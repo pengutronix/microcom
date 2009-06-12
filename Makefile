@@ -20,6 +20,7 @@
 #****************************************************************************/
 
 CFLAGS		+= -Wall -O2 -g
+CPPFLAGS	+= -DPKG_VERSION="\"2009.06\""
 
 microcom: microcom.o mux.o help.o serial.o telnet.o
 

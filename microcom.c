@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	printf("*** Welcome to microcom ***\n");
+	printf("*** Welcome to microcom (%s) ***\n", PKG_VERSION);
 
 	if (telnet)
 		ios = telnet_init(hostport);
