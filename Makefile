@@ -18,7 +18,8 @@
 #** Rev. 0.9 - Sept. 1999
 #** Rev. 0.91 - Jan. 2000 - minor fixes, compiled under Mandrake 6.0
 #****************************************************************************/
-CFLAGS=-Wall
+
+CFLAGS		+= -Wall -O2 -g
 
 microcom: microcom.o mux.o help.o serial.o telnet.o
 
