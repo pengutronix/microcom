@@ -1,0 +1,52 @@
+2009-06-12  Marc Kleine-Budde <mkl@pengutronix.de>
+
+  * serial.c, telnet.c: add forgotten license headers to files 
+
+  * microcom.c: fix compiler warning (uninitialized variable hostport) 
+  microcom.c:152: warning: 'hostport' may be used uninitialized in this
+  function 
+
+  * Makefile, microcom.c: add version string 
+
+  * Makefile: add -O2 to CFLAGS 
+
+2009-01-16  Wolfram Sang <w.sang@pengutronix.de>
+
+  * serial.c: * locking: adapt to kermit  
+
+2009-01-14  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * serial.c: remove trailing whitespaces 
+
+2009-01-14  Wolfram Sang <w.sang@pengutronix.de>
+
+  * serial.c: * check for and create lockfiles for serial ports  
+
+2008-09-01  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * serial.c, telnet.c: 
+
+2008-08-28  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * Makefile, help.c, microcom.c, microcom.h, mux.c: duett und datt 
+
+  * microcom.c: resolve hostnames 
+
+  * help.c, microcom.c, microcom.h, mux.c: implement telnet rfc2217 mode
+  (experimental), update help 
+
+2007-05-15  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * help.c: allow q for quit 
+
+  * microcom.c: ignore break 
+
+2006-05-10  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * mux.c: fflush log 
+
+  * microcom.c: change CR/NL mapping 
+
+2006-05-05  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * Makefile, help.c, microcom.c, microcom.h, mux.c: initial 
