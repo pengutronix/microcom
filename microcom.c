@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 	struct termios sts;	/* termios settings on stdout/in */
 	struct sigaction sact;	/* used to initialize the signal handler */
 	int opt, speed = DEFAULT_BAUDRATE;
-	char *hostport;
+	char *hostport = NULL;
 	char *device = DEFAULT_DEVICE;
 
 	struct option long_options[] = {
