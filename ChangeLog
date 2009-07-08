@@ -1,4 +1,11 @@
+2009-07-08  Marc Kleine-Budde <mkl@pengutronix.de>
+
+  * microcom.c: [microcom] clean up propperly on exit 
+
 2009-06-12  Marc Kleine-Budde <mkl@pengutronix.de>
+
+  * ChangeLog, gitlog2changelog.py: added ChangeLog and gitlog2changelog.py 
+  the latter one is a changelog generator \o/ 
 
   * serial.c, telnet.c: add forgotten license headers to files 
 

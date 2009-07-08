@@ -219,6 +219,8 @@ int main(int argc, char *argv[])
 	/* run thhe main program loop */
 	mux_loop(ios);
 
+	microcom_exit(0);
+
 	/* not reached */
 	return 0;
 }
