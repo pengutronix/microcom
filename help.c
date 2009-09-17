@@ -155,8 +155,9 @@ static void help_send_escape(struct ios_ops *ios, char c)
 		}
 		break;
 	case 'b':		/* send break */
-		/* send a break */
-		tcsendbreak(ios->fd, 0);
+		if (ios->send_break)
+			/* send a break */
+			ios->send_break(ios);
 		break;
 	case 't':		/* set terminal */
 		help_state = 1;

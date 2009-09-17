@@ -62,6 +62,15 @@ static int telnet_set_flow(struct ios_ops *ios, int flow)
 	return 0;
 }
 
+static int telnet_send_break(struct ios_ops *ios)
+{
+	unsigned char buf2[] = {IAC, BREAK};
+
+	write(ios->fd, buf2, sizeof(buf2));
+
+	return 0;
+}
+
 void telnet_exit(struct ios_ops *ios)
 {
 	close(ios->fd);
@@ -84,6 +93,7 @@ struct ios_ops *telnet_init(char *hostport)
 
 	ios->set_speed = telnet_set_speed;
 	ios->set_flow = telnet_set_flow;
+	ios->send_break = telnet_send_break;
 	ios->exit = telnet_exit;
 
 	portstr = strchr(hostport, ':');

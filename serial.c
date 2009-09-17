@@ -89,6 +89,13 @@ static int serial_set_flow(struct ios_ops *ios, int flow)
 	return 0;
 }
 
+static int serial_send_break(struct ios_ops *ios)
+{
+	tcsendbreak(ios->fd, 0);
+
+	return 0;
+}
+
 /* restore original terminal settings on exit */
 static void serial_exit(struct ios_ops *ios)
 {
@@ -112,6 +119,7 @@ struct ios_ops * serial_init(char *device)
 
 	ops->set_speed = serial_set_speed;
 	ops->set_flow = serial_set_flow;
+	ops->send_break = serial_send_break;
 	ops->exit = serial_exit;
 
 	/* check lockfile */

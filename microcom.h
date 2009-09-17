@@ -51,6 +51,7 @@ struct ios_ops {
 #define FLOW_SOFT	1
 #define FLOW_HARD	2
 	int (*set_flow)(struct ios_ops *, int flow);
+	int (*send_break)(struct ios_ops *);
 	void (*exit)(struct ios_ops *);
 	int fd;
 };
