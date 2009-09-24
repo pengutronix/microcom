@@ -210,7 +210,7 @@ void mux_loop(struct ios_ops *ios)
 					i = handle_command(buf, len);
 				write(STDOUT_FILENO, buf + i, len - i);
 				if (dolog) {
-					fwrite(buf, 1, i, flog);
+					fwrite(buf + i , 1, len - i , flog);
 					fflush(flog);
 				}
 			} else

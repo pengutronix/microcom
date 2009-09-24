@@ -1,6 +1,16 @@
+2009-09-24  Jan Weitzel <J.Weitzel@phytec.de>
+
+  * ChangeLog, mux.c: [microcom] fix log data  Log complete buffer as shown on
+  STOUT (without commands) into logfile, not only the commands  [mkl: improved
+  short description, fixed coding style]
+
+2009-09-17  Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+
+  * help.c, microcom.h, serial.c, telnet.c: Implement break for rfc2217 mode 
+
 2009-07-08  Marc Kleine-Budde <mkl@pengutronix.de>
 
-  * microcom.c: [microcom] clean up propperly on exit 
+  * ChangeLog, microcom.c: [microcom] clean up propperly on exit 
 
 2009-06-12  Marc Kleine-Budde <mkl@pengutronix.de>
 
