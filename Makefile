@@ -23,7 +23,7 @@ CFLAGS		+= -Wall -O2 -g
 LDFLAGS		+= -lreadline
 CPPFLAGS	+= -DPKG_VERSION="\"2009.06\""
 
-microcom: microcom.o mux.o serial.o telnet.o commands.o parser.o
+microcom: microcom.o mux.o serial.o telnet.o commands.o parser.o commands_fsl_imx.o
 
 mux.o: mux.c microcom.h
 
@@ -36,6 +36,8 @@ telnet.o: telnet.c microcom.h
 commands.o: telnet.o microcom.h
 
 parser.o: parser.c microcom.h
+
+commands_fsl_imx.o: commands_fsl_imx.c microcom.h
 
 clean:
 	rm -f *.o microcom

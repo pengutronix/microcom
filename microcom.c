@@ -204,6 +204,7 @@ int main(int argc, char *argv[])
 	}
 
 	commands_init();
+	commands_fsl_imx_init();
 
 	if (telnet)
 		ios = telnet_init(hostport);
