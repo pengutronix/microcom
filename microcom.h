@@ -56,13 +56,16 @@ struct ios_ops {
 	int fd;
 };
 
-void cook_buf(struct ios_ops *, unsigned char *buf, int num); /* microcom.c */ 
 void mux_loop(struct ios_ops *); /* mux.c */
+void init_terminal(void);
+void restore_terminal(void);
 
 struct ios_ops *telnet_init(char *hostport);
 struct ios_ops *serial_init(char *dev);
 
 void microcom_exit(int signal);
+
+void microcom_cmd_usage(char *str);
 
 void main_usage(int exitcode, char *str, char *dev);
 
@@ -74,6 +77,29 @@ extern int debug;
 extern int dolog;
 extern FILE *flog;
 extern int opt_force;
+
+struct cmd {
+	char *name;
+	int(*fn)(int argc, char *argv[]);
+	struct cmd *next;
+	char *info;
+	char *help;
+};
+
+int register_command(struct cmd *cmd);
+#define MICROCOM_CMD_START 100
+#define MICROCOM_CMD_USAGE 101
+extern struct cmd *commands;
+
+#define for_each_command(cmd) for (cmd = commands; cmd; cmd = cmd->next)
+
+void commands_init(void);
+void commands_fsl_imx_init(void);
+#define ARRAY_SIZE(arr)            (sizeof(arr) / sizeof((arr)[0]))
+extern int current_speed;
+extern int current_flow;
+int do_commandline(void);
+int do_script(char *script);
 
 #define dprintf(fmt,args...)  ({ if (debug) printf (fmt ,##args); })
 

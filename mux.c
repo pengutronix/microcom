@@ -182,6 +182,32 @@ static int handle_command(unsigned char *buf, int len)
 	return len;
 }
 
+/* handle escape characters, writing to output */
+static void cook_buf(struct ios_ops *ios, unsigned char *buf, int num)
+{
+	int current = 0;
+
+	while (current < num) {	/* big while loop, to process all the charactes in buffer */
+
+		/* look for the next escape character '~' */
+		while ((current < num) && (buf[current] != 28))
+			current++;
+		/* and write the sequence befor esc char to the comm port */
+		if (current)
+			write(ios->fd, buf, current);
+
+		if (current < num) {	/* process an escape sequence */
+			/* found an escape character */
+			do_commandline();
+			return;
+		}		/* if - end of processing escape sequence */
+		num -= current;
+		buf += current;
+		current = 0;
+	}			/* while - end of processing all the charactes in the buffer */
+	return;
+}
+
 /* main program loop */
 void mux_loop(struct ios_ops *ios)
 {
