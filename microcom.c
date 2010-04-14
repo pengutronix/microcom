@@ -144,6 +144,8 @@ void main_usage(int exitcode, char *str, char *dev)
 	exit(exitcode);
 }
 
+int opt_force = 0;
+
 int main(int argc, char *argv[])
 {
 	struct termios sts;	/* termios settings on stdout/in */
@@ -158,10 +160,11 @@ int main(int argc, char *argv[])
 		{ "speed", required_argument, 0, 's'},
 		{ "telnet", required_argument, 0, 't'},
 		{ "debug", no_argument, 0, 'd' },
+		{ "force", no_argument, 0, 'f' },
 		{ 0, 0, 0, 0},
 	};
 
-	while ((opt = getopt_long(argc, argv, "hp:s:t:d", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "hp:s:t:df", long_options, NULL)) != -1) {
 		switch (opt) {
 			case 'h':
 				main_usage(1, "", "");
@@ -175,6 +178,9 @@ int main(int argc, char *argv[])
 			case 't':
 				telnet = 1;
 				hostport = optarg;
+				break;
+			case 'f':
+				opt_force = 1;
 				break;
 			case 'd':
 				debug = 1;

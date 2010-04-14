@@ -73,6 +73,7 @@ extern struct ios_ops *ios;
 extern int debug;
 extern int dolog;
 extern FILE *flog;
+extern int opt_force;
 
 #define dprintf(fmt,args...)  ({ if (debug) printf (fmt ,##args); })
 
