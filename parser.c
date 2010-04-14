@@ -84,6 +84,26 @@ int register_command(struct cmd *cmd)
 	return 0;
 }
 
+void microcom_cmd_usage(char *command)
+{
+	struct cmd *cmd;
+
+	for_each_command(cmd) {
+		if (!strcmp(command, cmd->name)) {
+			char *str = NULL;
+			if (cmd->info)
+				str = cmd->info;
+			if (cmd->help)
+				str = cmd->help;
+			if (!str)
+				str = "no help available\n";
+			printf("usage:\n%s\n", str);
+			return;
+		}
+	}
+	printf("no such command\n");
+}
+
 static int __do_commandline(const char *prompt)
 {
 	char *cmd;
@@ -99,7 +119,7 @@ static int __do_commandline(const char *prompt)
 		}
 
 		if (!strlen(cmd))
-			break;
+			goto done;
 
 		if (prompt)
 			add_history(cmd);
@@ -122,6 +142,10 @@ static int __do_commandline(const char *prompt)
 						free(cmd);
 						return ret;
 					}
+
+					if (ret == MICROCOM_CMD_USAGE)
+						microcom_cmd_usage(argv[0]);
+
 					handled = 1;
 					break;
 				}
@@ -129,7 +153,7 @@ static int __do_commandline(const char *prompt)
 			if (!handled)
 				printf("unknown command \'%s\', try \'help\'\n", argv[0]);
 		}
-
+done:
 		free(cmd);
 	}
 

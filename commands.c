@@ -94,20 +94,7 @@ static int cmd_help(int argc, char *argv[])
 				printf("%s\n", cmd->name);
 		}
 	} else {
-		for_each_command(cmd) {
-			if (!strcmp(argv[1], cmd->name)) {
-				char *str = NULL;
-				if (cmd->info)
-					str = cmd->info;
-				if (cmd->help)
-					str = cmd->help;
-				if (!str)
-					str = "no help available\n";
-				printf("usage:\n%s\n", str);
-				return 0;
-			}
-		}
-		printf("no such command\n");
+		microcom_cmd_usage(argv[1]);
 	}
 
 	return 0;
@@ -118,8 +105,7 @@ static int cmd_execute(int argc, char *argv[])
 	if (argc < 2)
 		return MICROCOM_CMD_USAGE;
 
-	do_script(argv[1]);
-	return 0;
+	return do_script(argv[1]);
 }
 
 static int cmd_comment(int argc, char *argv[])

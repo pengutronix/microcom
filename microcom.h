@@ -65,6 +65,8 @@ struct ios_ops *serial_init(char *dev);
 
 void microcom_exit(int signal);
 
+void microcom_cmd_usage(char *str);
+
 void main_usage(int exitcode, char *str, char *dev);
 
 int flag_to_baudrate(speed_t speed);
