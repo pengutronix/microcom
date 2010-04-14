@@ -20,19 +20,22 @@
 #****************************************************************************/
 
 CFLAGS		+= -Wall -O2 -g
+LDFLAGS		+= -lreadline
 CPPFLAGS	+= -DPKG_VERSION="\"2009.06\""
 
-microcom: microcom.o mux.o help.o serial.o telnet.o
+microcom: microcom.o mux.o serial.o telnet.o commands.o parser.o
 
 mux.o: mux.c microcom.h
 
 microcom.o: microcom.c microcom.h
 
-help.o: help.c microcom.h
-
 serial.o: serial.c microcom.h
 
 telnet.o: telnet.c microcom.h
+
+commands.o: telnet.o microcom.h
+
+parser.o: parser.c microcom.h
 
 clean:
 	rm -f *.o microcom
