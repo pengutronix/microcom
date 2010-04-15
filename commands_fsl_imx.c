@@ -612,24 +612,39 @@ static struct cmd cmds[] = {
 	{
 		.name = "md",
 		.fn = md,
+		.info = "Display memory (i.MX specific)",
+		.help = "md <address>",
 	}, {
 		.name = "mw",
-		.fn = mw
+		.fn = mw,
+		.info = "write memory (i.MX specific)",
+		.help = "mw <address> <value>",
 	},  {
 		.name = "mwb",
-		.fn = mw
+		.fn = mw,
+		.info = "write memory byte (i.MX specific)",
+		.help = "mwb <address> <value>",
 	},  {
 		.name = "mwh",
-		.fn = mw
+		.fn = mw,
+		.info = "write memory 2 byte (i.MX specific)",
+		.help = "mwh <address> <value>",
 	}, {
 		.name = "upload",
 		.fn = upload,
+		.info = "upload image (i.MX specific)",
+		.help = "upload <address> <file> [<imagetype>]\n"
+			"use imagetype = 0xaa for application images",
 	}, {
 		.name = "connect",
 		.fn = fsl_connect,
+		.info = "sync communication to Processor (i.MX specific)",
+		.help = "connect",
 	}, {
 		.name = "sniff",
 		.fn = fsl_sniff,
+		.info = "sniff and dissect communication from ATK (i.MX specific)",
+		.help = "sniff",
 	},
 };
 
