@@ -50,18 +50,27 @@ static int get_ack(int fd)
 static int sync_com(int fd)
 {
 	unsigned char buf = 0x1;
-	int ret;
+	int ret, i;
 
-	while (1) {
-		ret = write(ios->fd, &buf, 1);
-		if (ret < 0)
-			perror("write");
-		usleep(100000);
-		if (available(fd))
-			break;
+	for (i = 0; i < 16; i++) {
+		while (1) {
+			printf("wr %d\n", i++);
+			ret = write(ios->fd, &buf, 1);
+			if (ret < 0)
+				perror("write");
+			usleep(100000);
+			if (available(fd))
+				break;
+		}
+		ret = get_ack(fd);
+		if (!ret)
+			return ret;
+		printf("no ack. try again\n");
 	}
 
-	return get_ack(fd);
+	printf("failed to connect\n");
+
+	return -EINVAL;
 }
 
 static int read_mem(int fd, uint32_t address, void *_buf, int size, int accesssize)
