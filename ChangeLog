@@ -1,3 +1,14 @@
+2010-04-15  Marc Kleine-Budde <mkl@pengutronix.de>
+
+  * ChangeLog: update changelog 
+
+2010-04-14  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * .gitignore: add ignore file 
+
+  * microcom.c, microcom.h, serial.c: add a -f option to ignore existing
+  lockfiles 
+
 2009-09-24  Jan Weitzel <J.Weitzel@phytec.de>
 
   * ChangeLog, mux.c: [microcom] fix log data  Log complete buffer as shown on
