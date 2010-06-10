@@ -73,7 +73,7 @@ static int cmd_exit(int argc, char *argv[])
 static int cmd_break(int argc, char *argv[])
 {
 	ios->send_break(ios);
-	return 0;
+	return MICROCOM_CMD_START;
 }
 
 static int cmd_quit(int argc, char *argv[])
