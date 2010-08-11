@@ -25,6 +25,9 @@
 #include <getopt.h>
 #include <sys/socket.h>
 #include <string.h>
+#include <stdint.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 int dolog = 0;			/* log active flag */
 FILE *flog;			/* log file */
@@ -35,17 +38,28 @@ int telnet = 0;
 struct ios_ops *ios;
 int debug = 0;
 
-void init_stdin(struct termios *sts)
+void init_terminal(void)
 {
+	struct termios sts;
+
+	memcpy(&sts, &sots, sizeof (sots));     /* to be used upon exit */
+
 	/* again, some arbitrary things */
-	sts->c_iflag &= ~BRKINT;
-	sts->c_iflag |= IGNBRK;
-	sts->c_lflag &= ~ISIG;
-	sts->c_cc[VMIN] = 1;
-	sts->c_cc[VTIME] = 0;
-	sts->c_lflag &= ~ICANON;
+	sts.c_iflag &= ~BRKINT;
+	sts.c_iflag |= IGNBRK;
+	sts.c_lflag &= ~ISIG;
+	sts.c_cc[VMIN] = 1;
+	sts.c_cc[VTIME] = 0;
+	sts.c_lflag &= ~ICANON;
 	/* no local echo: allow the other end to do the echoing */
-	sts->c_lflag &= ~(ECHO | ECHOCTL | ECHONL);
+	sts.c_lflag &= ~(ECHO | ECHOCTL | ECHONL);
+
+	tcsetattr(STDIN_FILENO, TCSANOW, &sts);
+}
+
+void restore_terminal(void)
+{
+	tcsetattr(STDIN_FILENO, TCSANOW, &sots);
 }
 
 speed_t baudrate_to_flag(int speed)
@@ -145,14 +159,16 @@ void main_usage(int exitcode, char *str, char *dev)
 }
 
 int opt_force = 0;
+int current_speed = DEFAULT_BAUDRATE;
+int current_flow = FLOW_NONE;
 
 int main(int argc, char *argv[])
 {
-	struct termios sts;	/* termios settings on stdout/in */
-	struct sigaction sact;	/* used to initialize the signal handler */
-	int opt, speed = DEFAULT_BAUDRATE;
+	struct sigaction sact;  /* used to initialize the signal handler */
+	int opt;
 	char *hostport = NULL;
 	char *device = DEFAULT_DEVICE;
+	speed_t flag;
 
 	struct option long_options[] = {
 		{ "help", no_argument, 0, 'h' },
@@ -173,7 +189,7 @@ int main(int argc, char *argv[])
 				device = optarg;
 				break;
 			case 's':
-				speed = strtoul(optarg, NULL, 0);
+				current_speed = strtoul(optarg, NULL, 0);
 				break;
 			case 't':
 				telnet = 1;
@@ -187,7 +203,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	printf("*** Welcome to microcom (%s) ***\n", PKG_VERSION);
+	commands_init();
+	commands_fsl_imx_init();
 
 	if (telnet)
 		ios = telnet_init(hostport);
@@ -197,22 +214,20 @@ int main(int argc, char *argv[])
 	if (!ios)
 		exit(1);
 
-	speed = baudrate_to_flag(speed);
-		if (speed < 0)
-			exit(1);
+	flag = baudrate_to_flag(current_speed);
+	if (flag < 0)
+		exit(1);
 
-	ios->set_speed(ios, speed);
-
-	ios->set_flow(ios, FLOW_NONE);
+	current_flow = FLOW_NONE;
+	ios->set_speed(ios, flag);
+	ios->set_flow(ios, current_flow);
 
 	printf("Escape character: Ctrl-\\\n");
 	printf("Type the escape character followed by c to get to the menu or q to quit\n");
 
 	/* Now deal with the local terminal side */
-	tcgetattr(STDIN_FILENO, &sts);
-	memcpy(&sots, &sts, sizeof (sots));	/* to be used upon exit */
-	init_stdin(&sts);
-	tcsetattr(STDIN_FILENO, TCSANOW, &sts);
+	tcgetattr(STDIN_FILENO, &sots);
+	init_terminal();
 
 	/* set the signal handler to restore the old
 	 * termios handler */
@@ -227,6 +242,5 @@ int main(int argc, char *argv[])
 
 	microcom_exit(0);
 
-	/* not reached */
 	return 0;
 }
