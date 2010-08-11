@@ -1,8 +1,31 @@
+2010-06-10  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * commands.c: reconnect after sending a break 
+
+2010-04-15  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * commands_fsl_imx.c: fsl commands: update help texts 
+
 2010-04-15  Marc Kleine-Budde <mkl@pengutronix.de>
 
   * ChangeLog: update changelog 
 
+2010-04-15  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * commands_fsl_imx.c: fsl commands: commands seem to be only 16 byte. Now
+  works on i.MX27 
+
+  * commands_fsl_imx.c: fsl commands: add loop arounf connect 
+
 2010-04-14  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * commands.c, microcom.h, parser.c: fixup help 
+
+  * Makefile, commands_fsl_imx.c, microcom.c: add initial support for starting
+  i.MX SoCs via UART 
+
+  * Makefile, commands.c, help.c, microcom.c, microcom.h, mux.c, parser.c:
+  implement a cli for microcom 
 
   * .gitignore: add ignore file 
 
