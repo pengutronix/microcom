@@ -25,7 +25,6 @@
 
 #include "microcom.h"
 
-int crnl_mapping;		//0 - no mapping, 1 mapping
 struct termios pots;		/* old port termios settings to restore */
 char *lockfile;
 
@@ -45,7 +44,6 @@ static void init_comm(struct termios *pts)
 	 *  no CR -> NL mapping on input.
 	 */
 	pts->c_oflag &= ~ONLCR;
-	crnl_mapping = 0;
 	pts->c_iflag &= ~ICRNL;
 }
 
