@@ -34,7 +34,6 @@ FILE *flog;			/* log file */
 int pf = 0;			/* port file descriptor */
 struct termios sots;		/* old stdout/in termios settings to restore */
 
-int telnet = 0;
 struct ios_ops *ios;
 int debug;
 
@@ -167,6 +166,7 @@ int main(int argc, char *argv[])
 	struct sigaction sact;  /* used to initialize the signal handler */
 	int opt;
 	char *hostport = NULL;
+	int telnet = 0;
 	char *device = DEFAULT_DEVICE;
 	speed_t flag;
 
