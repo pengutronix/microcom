@@ -606,6 +606,8 @@ static int fsl_sniff(int argc, char *argv[])
 			break;
 		};
 	}
+
+	return 0;
 }
 
 static struct cmd cmds[] = {
