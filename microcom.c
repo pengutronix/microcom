@@ -31,7 +31,6 @@
 
 int dolog;			/* log active flag */
 FILE *flog;			/* log file */
-int pf = 0;			/* port file descriptor */
 struct termios sots;		/* old stdout/in termios settings to restore */
 
 struct ios_ops *ios;
