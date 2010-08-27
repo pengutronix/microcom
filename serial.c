@@ -25,8 +25,8 @@
 
 #include "microcom.h"
 
-struct termios pots;		/* old port termios settings to restore */
-char *lockfile;
+static struct termios pots;		/* old port termios settings to restore */
+static char *lockfile;
 
 static void init_comm(struct termios *pts)
 {
