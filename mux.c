@@ -21,7 +21,6 @@
 #include <arpa/telnet.h>
 #include <arpa/inet.h>
 
-#define SCRIPT_DELAY 1
 #define BUFSIZE 1024
 
 static int do_com_port_option(unsigned char *buf, int len)
@@ -215,10 +214,6 @@ void mux_loop(struct ios_ops *ios)
 	int i = 0, len;		/* used in the multiplex loop */
 	int done = 0;
 	unsigned char buf[BUFSIZE];
-	struct timeval tv;
-
-	tv.tv_sec = SCRIPT_DELAY;
-	tv.tv_usec = 0;
 
 	do {			/* forever */
 		FD_ZERO(&ready);
