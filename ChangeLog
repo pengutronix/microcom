@@ -1,36 +1,80 @@
+2010-08-29  Marc Kleine-Budde <mkl@pengutronix.de>
+
+  * ChangeLog: update changelog
+
+2010-08-28  Marc Kleine-Budde <mkl@pengutronix.de>
+
+  * Makefile, can.c, microcom.c, microcom.h: add simple CAN terminal support
+
+2010-08-27  Marc Kleine-Budde <mkl@pengutronix.de>
+
+  * microcom.h: microcom: borrow min/max defines from the linux kernel
+
+2010-08-28  Marc Kleine-Budde <mkl@pengutronix.de>
+
+  * microcom.c: cmd line parser: fail on unknown options
+
+2010-08-27  Marc Kleine-Budde <mkl@pengutronix.de>
+
+  * microcom.c, serial.c, telnet.c: make functions and vars static
+
+  * serial.c: serial: remove write only var crnl_mapping
+
+  * microcom.c: microcom: remove unused var pf
+
+  * microcom.c: microcom: make var telnet non global
+
+2010-08-29  Marc Kleine-Budde <mkl@pengutronix.de>
+
+  * microcom.c: microcom: remove init of static variables with zero
+
+  * microcom.h: microcom: remove unused definitions
+
+2010-08-27  Marc Kleine-Budde <mkl@pengutronix.de>
+
+  * mux.c: mux: remove unused SCRIPT_DELAY
+
+  * commands_fsl_imx.c: commands_fsl_imx: fsl_sniff: add missing return
+
+2010-08-11  Marc Kleine-Budde <mkl@pengutronix.de>
+
+  * .gitignore: gitignore; added *~
+
+  * ChangeLog: update changelog
+
 2010-06-10  Sascha Hauer <s.hauer@pengutronix.de>
 
-  * commands.c: reconnect after sending a break 
+  * commands.c: reconnect after sending a break
 
 2010-04-15  Sascha Hauer <s.hauer@pengutronix.de>
 
-  * commands_fsl_imx.c: fsl commands: update help texts 
+  * commands_fsl_imx.c: fsl commands: update help texts
 
 2010-04-15  Marc Kleine-Budde <mkl@pengutronix.de>
 
-  * ChangeLog: update changelog 
+  * ChangeLog: update changelog
 
 2010-04-15  Sascha Hauer <s.hauer@pengutronix.de>
 
   * commands_fsl_imx.c: fsl commands: commands seem to be only 16 byte. Now
-  works on i.MX27 
+  works on i.MX27
 
-  * commands_fsl_imx.c: fsl commands: add loop arounf connect 
+  * commands_fsl_imx.c: fsl commands: add loop arounf connect
 
 2010-04-14  Sascha Hauer <s.hauer@pengutronix.de>
 
-  * commands.c, microcom.h, parser.c: fixup help 
+  * commands.c, microcom.h, parser.c: fixup help
 
   * Makefile, commands_fsl_imx.c, microcom.c: add initial support for starting
-  i.MX SoCs via UART 
+  i.MX SoCs via UART
 
   * Makefile, commands.c, help.c, microcom.c, microcom.h, mux.c, parser.c:
-  implement a cli for microcom 
+  implement a cli for microcom
 
-  * .gitignore: add ignore file 
+  * .gitignore: add ignore file
 
   * microcom.c, microcom.h, serial.c: add a -f option to ignore existing
-  lockfiles 
+  lockfiles
 
 2009-09-24  Jan Weitzel <J.Weitzel@phytec.de>
 
@@ -40,38 +84,38 @@
 
 2009-09-17  Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-  * help.c, microcom.h, serial.c, telnet.c: Implement break for rfc2217 mode 
+  * help.c, microcom.h, serial.c, telnet.c: Implement break for rfc2217 mode
 
 2009-07-08  Marc Kleine-Budde <mkl@pengutronix.de>
 
-  * ChangeLog, microcom.c: [microcom] clean up propperly on exit 
+  * ChangeLog, microcom.c: [microcom] clean up propperly on exit
 
 2009-06-12  Marc Kleine-Budde <mkl@pengutronix.de>
 
   * ChangeLog, gitlog2changelog.py: added ChangeLog and gitlog2changelog.py 
-  the latter one is a changelog generator \o/ 
+  the latter one is a changelog generator \o/
 
-  * serial.c, telnet.c: add forgotten license headers to files 
+  * serial.c, telnet.c: add forgotten license headers to files
 
   * microcom.c: fix compiler warning (uninitialized variable hostport) 
   microcom.c:152: warning: 'hostport' may be used uninitialized in this
-  function 
+  function
 
-  * Makefile, microcom.c: add version string 
+  * Makefile, microcom.c: add version string
 
-  * Makefile: add -O2 to CFLAGS 
+  * Makefile: add -O2 to CFLAGS
 
 2009-01-16  Wolfram Sang <w.sang@pengutronix.de>
 
-  * serial.c: * locking: adapt to kermit  
+  * serial.c: * locking: adapt to kermit
 
 2009-01-14  Sascha Hauer <s.hauer@pengutronix.de>
 
-  * serial.c: remove trailing whitespaces 
+  * serial.c: remove trailing whitespaces
 
 2009-01-14  Wolfram Sang <w.sang@pengutronix.de>
 
-  * serial.c: * check for and create lockfiles for serial ports  
+  * serial.c: * check for and create lockfiles for serial ports
 
 2008-09-01  Sascha Hauer <s.hauer@pengutronix.de>
 
@@ -79,25 +123,25 @@
 
 2008-08-28  Sascha Hauer <s.hauer@pengutronix.de>
 
-  * Makefile, help.c, microcom.c, microcom.h, mux.c: duett und datt 
+  * Makefile, help.c, microcom.c, microcom.h, mux.c: duett und datt
 
-  * microcom.c: resolve hostnames 
+  * microcom.c: resolve hostnames
 
   * help.c, microcom.c, microcom.h, mux.c: implement telnet rfc2217 mode
-  (experimental), update help 
+  (experimental), update help
 
 2007-05-15  Sascha Hauer <s.hauer@pengutronix.de>
 
-  * help.c: allow q for quit 
+  * help.c: allow q for quit
 
-  * microcom.c: ignore break 
+  * microcom.c: ignore break
 
 2006-05-10  Sascha Hauer <s.hauer@pengutronix.de>
 
-  * mux.c: fflush log 
+  * mux.c: fflush log
 
-  * microcom.c: change CR/NL mapping 
+  * microcom.c: change CR/NL mapping
 
 2006-05-05  Sascha Hauer <s.hauer@pengutronix.de>
 
-  * Makefile, help.c, microcom.c, microcom.h, mux.c: initial 
+  * Makefile, help.c, microcom.c, microcom.h, mux.c: initial
