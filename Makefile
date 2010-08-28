@@ -20,10 +20,11 @@
 #****************************************************************************/
 
 CFLAGS		+= -Wall -O2 -g
-LDFLAGS		+= -lreadline
-CPPFLAGS	+= -DPKG_VERSION="\"2009.06\""
+LDFLAGS		+= -lreadline -lpthread
+CPPFLAGS	+= -DPKG_VERSION="\"2009.06\"" -DPF_CAN=29 -DAF_CAN=PF_CAN
 
-microcom: microcom.o mux.o serial.o telnet.o commands.o parser.o commands_fsl_imx.o
+
+microcom: microcom.o mux.o serial.o telnet.o can.o commands.o parser.o commands_fsl_imx.o
 
 mux.o: mux.c microcom.h
 
@@ -32,6 +33,8 @@ microcom.o: microcom.c microcom.h
 serial.o: serial.c microcom.h
 
 telnet.o: telnet.c microcom.h
+
+can.o: can.c microcom.h
 
 commands.o: telnet.o microcom.h
 

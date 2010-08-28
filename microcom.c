@@ -147,11 +147,14 @@ void main_usage(int exitcode, char *str, char *dev)
 {
 	fprintf(stderr, "Usage: microcom [options]\n"
 		" [options] include:\n"
-		"    -p devfile      use the specified serial port device (%s);\n"
-		"    -s speed        use specified baudrate (%d)\n"
-		"    -t host:port    work in telnet (rfc2217) mode\n"
+		"    -p devfile                  use the specified serial port device (%s);\n"
+		"    -s speed                    use specified baudrate (%d)\n"
+		"    -t host:port                work in telnet (rfc2217) mode\n"
+		"    -c interface:rx_id:tx_id    work in CAN mode\n"
+		"                                default: (%s:%x:%x)\n"
 		"microcom provides session logging in microcom.log file\n",
-		DEFAULT_DEVICE, DEFAULT_BAUDRATE);
+		DEFAULT_DEVICE, DEFAULT_BAUDRATE,
+		DEFAULT_CAN_INTERFACE, DEFAULT_CAN_ID, DEFAULT_CAN_ID);
 	fprintf(stderr, "Exitcode %d - %s %s\n\n", exitcode, str, dev);
 	exit(exitcode);
 }
@@ -165,7 +168,8 @@ int main(int argc, char *argv[])
 	struct sigaction sact;  /* used to initialize the signal handler */
 	int opt;
 	char *hostport = NULL;
-	int telnet = 0;
+	int telnet = 0, can = 0;
+	char *interfaceid = NULL;
 	char *device = DEFAULT_DEVICE;
 	speed_t flag;
 
@@ -174,12 +178,13 @@ int main(int argc, char *argv[])
 		{ "port", required_argument, 0, 'p'},
 		{ "speed", required_argument, 0, 's'},
 		{ "telnet", required_argument, 0, 't'},
+		{ "can", required_argument, 0, 'c'},
 		{ "debug", no_argument, 0, 'd' },
 		{ "force", no_argument, 0, 'f' },
 		{ 0, 0, 0, 0},
 	};
 
-	while ((opt = getopt_long(argc, argv, "hp:s:t:df", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "hp:s:t:c:df", long_options, NULL)) != -1) {
 		switch (opt) {
 			case 'h':
 			case '?':
@@ -195,6 +200,10 @@ int main(int argc, char *argv[])
 				telnet = 1;
 				hostport = optarg;
 				break;
+			case 'c':
+				can = 1;
+				interfaceid = optarg;
+				break;
 			case 'f':
 				opt_force = 1;
 				break;
@@ -206,8 +215,13 @@ int main(int argc, char *argv[])
 	commands_init();
 	commands_fsl_imx_init();
 
+	if (telnet && can)
+		main_usage(1, "", "");
+
 	if (telnet)
 		ios = telnet_init(hostport);
+	else if (can)
+		ios = can_init(interfaceid);
 	else
 		ios = serial_init(device);
 

@@ -34,6 +34,8 @@
 
 #define DEFAULT_BAUDRATE 115200
 #define DEFAULT_DEVICE "/dev/ttyS0"
+#define DEFAULT_CAN_INTERFACE "can0"
+#define DEFAULT_CAN_ID (0x200)
 
 struct ios_ops {
 	int (*set_speed)(struct ios_ops *, speed_t speed);
@@ -52,6 +54,7 @@ void restore_terminal(void);
 
 struct ios_ops *telnet_init(char *hostport);
 struct ios_ops *serial_init(char *dev);
+struct ios_ops *can_init(char *interfaceid);
 
 void microcom_exit(int signal);
 
