@@ -29,14 +29,14 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-int dolog = 0;			/* log active flag */
+int dolog;			/* log active flag */
 FILE *flog;			/* log file */
 int pf = 0;			/* port file descriptor */
 struct termios sots;		/* old stdout/in termios settings to restore */
 
 int telnet = 0;
 struct ios_ops *ios;
-int debug = 0;
+int debug;
 
 void init_terminal(void)
 {
