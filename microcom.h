@@ -32,18 +32,8 @@
 #include <unistd.h>
 #include <assert.h>
 
-#define MAX_SCRIPT_NAME 20 /* maximum length of the name of the script file */
-#define MAX_DEVICE_NAME 20 /* maximum length of the name of the /dev comm port driver */
-
 #define DEFAULT_BAUDRATE 115200
 #define DEFAULT_DEVICE "/dev/ttyS0"
-
-typedef enum {
-	S_TIMEOUT,		/* timeout */
-	S_DTE,		/* incoming data coming from kbd */
-	S_DCE,		/* incoming data from serial port */
-	S_MAX			/* not used - just for checking */
-} S_ORIGINATOR;
 
 struct ios_ops {
 	int (*set_speed)(struct ios_ops *, speed_t speed);
