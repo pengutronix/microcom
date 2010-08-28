@@ -91,7 +91,7 @@ for line in fin:
 
         # Assemble the actual commit message line(s) and limit the line length
         # to 80 characters.
-        commitLine = "* " + files + ": " + message
+        commitLine = "* " + files + ": " + message.strip()
         i = 0
         commit = ""
         while i < len(commitLine):
