@@ -94,14 +94,20 @@ static int serial_send_break(struct ios_ops *ios)
 	return 0;
 }
 
+/* unlink the lockfile */
+static void serial_unlock()
+{
+	if (lockfile)
+		unlink(lockfile);
+}
+
 /* restore original terminal settings on exit */
 static void serial_exit(struct ios_ops *ios)
 {
 	tcsetattr(ios->fd, TCSANOW, &pots);
 	close(ios->fd);
 	free(ios);
-	if (lockfile)
-		unlink(lockfile);
+	serial_unlock();
 }
 
 struct ios_ops * serial_init(char *device)
@@ -142,7 +148,7 @@ struct ios_ops * serial_init(char *device)
 	if (fd >= 0 && opt_force) {
 		close(fd);
 		printf("lockfile for port exists, ignoring\n");
-		unlink(lockfile);
+		serial_unlock();
 	}
 
 	fd = open(lockfile, O_RDWR | O_CREAT, 0444);
@@ -162,8 +168,10 @@ force:
 	fd = open(device, O_RDWR);
 	ops->fd = fd;
 
-	if (fd < 0)
+	if (fd < 0) {
+		serial_unlock();
 		main_usage(2, "cannot open device", device);
+	}
 
 	/* modify the port configuration */
 	tcgetattr(fd, &pts);
