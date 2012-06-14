@@ -1,3 +1,13 @@
+2012-06-14  Marc Kleine-Budde <mkl@pengutronix.de>
+
+  * Makefile: release 2012.06.0
+
+2012-02-18  Jonas Zetterberg <jozz@jozz.se>
+
+  * serial.c: Remove lockfile on open serial failure  Since the lockfile is
+  created before the serial device is opened, if the serial device can not be
+  opened the lockfile needs to be removed.
+
 2010-08-29  Marc Kleine-Budde <mkl@pengutronix.de>
 
   * ChangeLog: update changelog
