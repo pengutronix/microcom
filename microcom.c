@@ -43,7 +43,7 @@ void init_terminal(void)
 	memcpy(&sts, &sots, sizeof (sots));     /* to be used upon exit */
 
 	/* again, some arbitrary things */
-	sts.c_iflag &= ~BRKINT;
+	sts.c_iflag &= ~(IGNCR | INLCR | ICRNL);
 	sts.c_iflag |= IGNBRK;
 	sts.c_lflag &= ~ISIG;
 	sts.c_cc[VMIN] = 1;
