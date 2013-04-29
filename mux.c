@@ -188,10 +188,10 @@ static void cook_buf(struct ios_ops *ios, unsigned char *buf, int num)
 
 	while (current < num) {	/* big while loop, to process all the charactes in buffer */
 
-		/* look for the next escape character '~' */
+		/* look for the next escape character (Ctrl-\) */
 		while ((current < num) && (buf[current] != 28))
 			current++;
-		/* and write the sequence befor esc char to the comm port */
+		/* and write the sequence before esc char to the comm port */
 		if (current)
 			write(ios->fd, buf, current);
 
@@ -227,6 +227,10 @@ void mux_loop(struct ios_ops *ios)
 			/* pf has characters for us */
 			len = read(ios->fd, buf, BUFSIZE);
 			if (len > 0) {
+				/*
+				 * BUG?: this is telnet specific? Check for IAC
+				 * later in buf?
+				 */
 				if (*buf == IAC)
 					i = handle_command(buf, len);
 				write(STDOUT_FILENO, buf + i, len - i);
