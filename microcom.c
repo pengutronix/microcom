@@ -250,6 +250,7 @@ int main(int argc, char *argv[])
 	sigaction(SIGINT, &sact, NULL);
 	sigaction(SIGPIPE, &sact, NULL);
 	sigaction(SIGTERM, &sact, NULL);
+	sigaction(SIGQUIT, &sact, NULL);
 
 	/* run thhe main program loop */
 	mux_loop(ios);
