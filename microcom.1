@@ -1,0 +1,71 @@
+.TH "MICROCOM" "1"
+.SH "NAME"
+microcom \- A minimalistic terminal program
+.SH "SYNOPSIS"
+.PP
+.B microcom
+.RB [ -d ]
+.RB [ -f ]
+.RB [\| \-p
+.IR devfile |\| \fB\-t
+.IR host : port ]
+.RB [\| \-s
+.IR speed \|]
+.br
+.B microcom -c
+.IB interface : rx_id : tx_id
+.br
+.B microcom -h
+
+.SH "DESCRIPTION"
+.PP
+This manual page documents briefly the
+\fBmicrocom\fR command.
+.PP
+\fBmicrocom\fR is a is a minimalistic terminal
+program for accessing devices (e.g. switches) via a serial connection.
+It features connection via RS232 serial interfaces (including setting of
+transferrates) as well as in `telnetmode' as specified in
+rfc2217 and a (Linux specific) can mode.
+.PP
+The escape character to enter the program menu is crtl-\e. There are several
+commands available, among them
+.B quit
+(to exit microcom),
+.B exit
+(to return to normal mode) and
+.B speed
+(to set terminal speed)
+
+.SH "OPTIONS"
+.PP
+.B microcom
+follows the usual GNU command line syntax, with long options starting with two
+dashes (`\-'). A summary of options is included below.
+.TP
+.B \-d
+output debugging info to stdout.
+.TP
+.B \-f
+ignore an already existing lock file.
+.TP
+.BI \-p\  devfile \fR,\ \fB\-\-port= devfile
+use the specified serial port device (default
+.BR /dev/ttyS0 ).
+.TP
+.BI \-s\  speed \fR,\ \fB\-\-speed= speed
+use specified baudrate (default \fB115200\fR).
+.TP
+.BI \-t\  host\fB:\fIport \fR,\ \fB\-\-telnet= host\fB:\fIport
+work in telnet (rfc2217) mode.
+.TP
+.BI \-c\  interface\fB:\fIrx_id\fB:\fItx_id\fR,\ \fI \-\-can= interface\fB:\fIrx_id\fB:\fItx_id
+work in CAN mode (default: \fBcan0:200:200\fR)
+.TP
+.BR -h ", " \-\-help
+Show help.
+
+.SH "AUTHOR"
+.PP
+This manual page was written by Uwe Kleine-K\(:onig based on work initially
+done by Alexander Reichle-Schmehl.
