@@ -29,8 +29,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-int dolog;			/* log active flag */
-FILE *flog;			/* log file */
 static struct termios sots;	/* old stdout/in termios settings to restore */
 
 struct ios_ops *ios;
@@ -117,12 +115,6 @@ int flag_to_baudrate(speed_t speed)
 void microcom_exit(int signal)
 {
 	printf("exiting\n");
-
-	/* close the log file first */
-	if (dolog) {
-		fflush(flog);
-		fclose(flog);
-	}
 
 	ios->exit(ios);
 	tcsetattr(STDIN_FILENO, TCSANOW, &sots);

@@ -67,8 +67,6 @@ speed_t baudrate_to_flag(int speed);
 
 extern struct ios_ops *ios;
 extern int debug;
-extern int dolog;
-extern FILE *flog;
 extern int opt_force;
 
 struct cmd {
