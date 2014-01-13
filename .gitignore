@@ -1,4 +1,4 @@
 *.o
 *~
-.gitignore
-microcom
+/*.o
+/microcom
