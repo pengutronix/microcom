@@ -145,7 +145,7 @@ void main_usage(int exitcode, char *str, char *dev)
 		"    -c interface:rx_id:tx_id    work in CAN mode\n"
 		"                                default: (%s:%x:%x)\n"
 		"    -f                          ignore existing lock file\n"
-		"    -d                          output debugging info\n"
+		"    -d                          output debugging info\n",
 		DEFAULT_DEVICE, DEFAULT_BAUDRATE,
 		DEFAULT_CAN_INTERFACE, DEFAULT_CAN_ID, DEFAULT_CAN_ID);
 	fprintf(stderr, "Exitcode %d - %s %s\n\n", exitcode, str, dev);
