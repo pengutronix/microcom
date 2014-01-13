@@ -1,3 +1,26 @@
+2014-01-13  Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+
+  * ChangeLog, Makefile: release 2014.01.1
+
+  * microcom.c: Fix compiler warnings and segfault  Commit 3337bd893b6b dropped
+  the comma at the end of the format string by mistake resulting in several
+  compiler warnings:  microcom.c:150:3: warning: format ‘%s’ expects
+  argument of type ‘char *’, but argument 3 has type ‘int’ [-Wformat]
+  microcom.c:150:3: warning: format ‘%d’ expects argument of type
+  ‘int’, but argument 4 has type ‘char *’ [-Wformat] microcom.c:150:3:
+  warning: format ‘%s’ expects argument of type ‘char *’, but argument
+  5 has type ‘int’ [-Wformat] microcom.c:150:3: warning: format ‘%x’
+  expects a matching ‘unsigned int’ argument [-Wformat]  and a segfault
+  when main_usage is called. So readd that comma.  Fixes: 3337bd893b6b (fix
+  help string to include -d and -f)
+
+  * .gitignore: .gitignore: don't ignore .gitignore, anchor microcom entry
+
+  * commands.c, commands_fsl_imx.c, parser.c: Add explicit copyright and
+  license to three files  These files were only touched by Sascha and Marc back
+  in 2010.  Acked-by: Marc Kleine-Budde <mkl@pengutronix.de> Acked-by: Sascha
+  Hauer <s.hauer@pengutronix.de>
+
 2014-01-10  Uwe Kleine-König <uwe@kleine-koenig.org>
 
   * ChangeLog, Makefile: release 2014.01.0
