@@ -145,7 +145,8 @@ void main_usage(int exitcode, char *str, char *dev)
 		"    -c interface:rx_id:tx_id    work in CAN mode\n"
 		"                                default: (%s:%x:%x)\n"
 		"    -f                          ignore existing lock file\n"
-		"    -d                          output debugging info\n",
+		"    -d                          output debugging info\n"
+		"    -l <logfile>                log output to <logfile>\n",
 		DEFAULT_DEVICE, DEFAULT_BAUDRATE,
 		DEFAULT_CAN_INTERFACE, DEFAULT_CAN_ID, DEFAULT_CAN_ID);
 	fprintf(stderr, "Exitcode %d - %s %s\n\n", exitcode, str, dev);
@@ -159,11 +160,12 @@ int current_flow = FLOW_NONE;
 int main(int argc, char *argv[])
 {
 	struct sigaction sact;  /* used to initialize the signal handler */
-	int opt;
+	int opt, ret;
 	char *hostport = NULL;
 	int telnet = 0, can = 0;
 	char *interfaceid = NULL;
 	char *device = DEFAULT_DEVICE;
+	char *logfile = NULL;
 	speed_t flag;
 
 	struct option long_options[] = {
@@ -174,10 +176,11 @@ int main(int argc, char *argv[])
 		{ "can", required_argument, 0, 'c'},
 		{ "debug", no_argument, 0, 'd' },
 		{ "force", no_argument, 0, 'f' },
+		{ "logfile", required_argument, 0, 'l'},
 		{ 0, 0, 0, 0},
 	};
 
-	while ((opt = getopt_long(argc, argv, "hp:s:t:c:df", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dfl:", long_options, NULL)) != -1) {
 		switch (opt) {
 			case 'h':
 			case '?':
@@ -202,6 +205,10 @@ int main(int argc, char *argv[])
 				break;
 			case 'd':
 				debug = 1;
+				break;
+			case 'l':
+				logfile = optarg;
+				break;
 		}
 	}
 
@@ -220,6 +227,12 @@ int main(int argc, char *argv[])
 
 	if (!ios)
 		exit(1);
+
+	if (logfile) {
+		ret = logfile_open(logfile);
+		if (ret < 0)
+			exit(1);
+	}
 
 	flag = baudrate_to_flag(current_speed);
 	if (flag < 0)

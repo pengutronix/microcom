@@ -77,6 +77,9 @@ struct cmd {
 	char *help;
 };
 
+int logfile_open(const char *path);
+void logfile_close(void);
+
 int register_command(struct cmd *cmd);
 #define MICROCOM_CMD_START 100
 #define MICROCOM_CMD_USAGE 101

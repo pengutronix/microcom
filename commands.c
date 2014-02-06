@@ -116,6 +116,18 @@ static int cmd_execute(int argc, char *argv[])
 	return do_script(argv[1]);
 }
 
+static int cmd_log(int argc, char *argv[])
+{
+	int ret;
+
+	if (argc < 2)
+		return MICROCOM_CMD_USAGE;
+
+	ret = logfile_open(argv[1]);
+
+	return ret;
+}
+
 static int cmd_comment(int argc, char *argv[])
 {
 	return 0;
@@ -153,6 +165,11 @@ static struct cmd cmds[] = {
 		.fn = cmd_execute,
 		.info = "execute a script",
 		.help = "x <scriptfile>",
+	}, {
+		.name = "log",
+		.fn = cmd_log,
+		.info = "log to file",
+		.help = "log <logfile>",
 	}, {
 		.name = "#",
 		.fn = cmd_comment,
