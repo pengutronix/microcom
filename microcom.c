@@ -156,6 +156,7 @@ void main_usage(int exitcode, char *str, char *dev)
 int opt_force = 0;
 int current_speed = DEFAULT_BAUDRATE;
 int current_flow = FLOW_NONE;
+int listenonly = 0;
 
 int main(int argc, char *argv[])
 {
@@ -177,10 +178,11 @@ int main(int argc, char *argv[])
 		{ "debug", no_argument, 0, 'd' },
 		{ "force", no_argument, 0, 'f' },
 		{ "logfile", required_argument, 0, 'l'},
+		{ "listenonly", no_argument, 0, 'o'},
 		{ 0, 0, 0, 0},
 	};
 
-	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dfl:", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dfl:o", long_options, NULL)) != -1) {
 		switch (opt) {
 			case 'h':
 			case '?':
@@ -208,6 +210,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'l':
 				logfile = optarg;
+				break;
+			case 'o':
+				listenonly = 1;
 				break;
 		}
 	}
@@ -242,21 +247,23 @@ int main(int argc, char *argv[])
 	ios->set_speed(ios, flag);
 	ios->set_flow(ios, current_flow);
 
-	printf("Escape character: Ctrl-\\\n");
-	printf("Type the escape character followed by c to get to the menu or q to quit\n");
+	if (!listenonly) {
+		printf("Escape character: Ctrl-\\\n");
+		printf("Type the escape character followed by c to get to the menu or q to quit\n");
 
-	/* Now deal with the local terminal side */
-	tcgetattr(STDIN_FILENO, &sots);
-	init_terminal();
+		/* Now deal with the local terminal side */
+		tcgetattr(STDIN_FILENO, &sots);
+		init_terminal();
 
-	/* set the signal handler to restore the old
-	 * termios handler */
-	sact.sa_handler = &microcom_exit;
-	sigaction(SIGHUP, &sact, NULL);
-	sigaction(SIGINT, &sact, NULL);
-	sigaction(SIGPIPE, &sact, NULL);
-	sigaction(SIGTERM, &sact, NULL);
-	sigaction(SIGQUIT, &sact, NULL);
+		/* set the signal handler to restore the old
+		 * termios handler */
+		sact.sa_handler = &microcom_exit;
+		sigaction(SIGHUP, &sact, NULL);
+		sigaction(SIGINT, &sact, NULL);
+		sigaction(SIGPIPE, &sact, NULL);
+		sigaction(SIGTERM, &sact, NULL);
+		sigaction(SIGQUIT, &sact, NULL);
+	}
 
 	/* run thhe main program loop */
 	mux_loop(ios);

@@ -245,7 +245,8 @@ void mux_loop(struct ios_ops *ios)
 
 	do {			/* forever */
 		FD_ZERO(&ready);
-		FD_SET(STDIN_FILENO, &ready);
+		if (!listenonly)
+			FD_SET(STDIN_FILENO, &ready);
 		FD_SET(ios->fd, &ready);
 
 		select(ios->fd + 1, &ready, NULL, NULL, NULL);
@@ -267,7 +268,8 @@ void mux_loop(struct ios_ops *ios)
 			} else
 				done = 1;
 		}
-		if (FD_ISSET(STDIN_FILENO, &ready)) {
+
+		if (!listenonly && FD_ISSET(STDIN_FILENO, &ready)) {
 			/* standard input has characters for us */
 			i = read(STDIN_FILENO, buf, BUFSIZE);
 			if (i > 0)
