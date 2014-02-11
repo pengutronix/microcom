@@ -48,7 +48,7 @@ struct ios_ops {
 	int fd;
 };
 
-void mux_loop(struct ios_ops *); /* mux.c */
+int mux_loop(struct ios_ops *); /* mux.c */
 void init_terminal(void);
 void restore_terminal(void);
 

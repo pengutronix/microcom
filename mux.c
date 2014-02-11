@@ -236,14 +236,13 @@ int logfile_open(const char *path)
 }
 
 /* main program loop */
-void mux_loop(struct ios_ops *ios)
+int mux_loop(struct ios_ops *ios)
 {
 	fd_set ready;		/* used for select */
 	int i = 0, len;		/* used in the multiplex loop */
-	int done = 0;
 	unsigned char buf[BUFSIZE];
 
-	do {			/* forever */
+	while (1) {
 		FD_ZERO(&ready);
 		if (!listenonly)
 			FD_SET(STDIN_FILENO, &ready);
@@ -255,27 +254,31 @@ void mux_loop(struct ios_ops *ios)
 			i = 0;
 			/* pf has characters for us */
 			len = read(ios->fd, buf, BUFSIZE);
-			if (len > 0) {
-				/*
-				 * BUG?: this is telnet specific? Check for IAC
-				 * later in buf?
-				 */
-				if (*buf == IAC)
-					i = handle_command(buf, len);
-				write(STDOUT_FILENO, buf + i, len - i);
-				if (logfd >= 0)
-					write(logfd, buf + i, len - i);
-			} else
-				done = 1;
+			if (len < 0)
+				return -errno;
+			if (len == 0)
+				return -EINVAL;
+
+			/*
+			 * BUG?: this is telnet specific? Check for IAC
+			 * later in buf?
+			 */
+			if (*buf == IAC)
+				i = handle_command(buf, len);
+			write(STDOUT_FILENO, buf + i, len - i);
+			if (logfd >= 0)
+				write(logfd, buf + i, len - i);
 		}
 
 		if (!listenonly && FD_ISSET(STDIN_FILENO, &ready)) {
 			/* standard input has characters for us */
 			i = read(STDIN_FILENO, buf, BUFSIZE);
-			if (i > 0)
-				cook_buf(ios, buf, i);
-			else
-				done = 1;
+			if (i < 0)
+				return -errno;
+			if (i == 0)
+				return -EINVAL;
+
+			cook_buf(ios, buf, i);
 		}
-	} while (!done);
+	}
 }
