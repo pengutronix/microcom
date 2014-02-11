@@ -207,14 +207,14 @@ static void cook_buf(struct ios_ops *ios, unsigned char *buf, int num)
 	return;
 }
 
-static int logfd;
+static int logfd = -1;
 
 void logfile_close(void)
 {
-	if (logfd > 0)
+	if (logfd >= 0)
 		close(logfd);
 
-	logfd = 0;
+	logfd = -1;
 }
 
 int logfile_open(const char *path)
@@ -227,7 +227,7 @@ int logfile_open(const char *path)
 		return fd;
 	}
 
-	if (logfd > 0)
+	if (logfd >= 0)
 		logfile_close();
 
 	logfd = fd;
@@ -263,7 +263,7 @@ void mux_loop(struct ios_ops *ios)
 				if (*buf == IAC)
 					i = handle_command(buf, len);
 				write(STDOUT_FILENO, buf + i, len - i);
-				if (logfd > 0)
+				if (logfd >= 0)
 					write(logfd, buf + i, len - i);
 			} else
 				done = 1;
