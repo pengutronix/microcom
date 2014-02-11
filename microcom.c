@@ -79,6 +79,42 @@ int baudrate_to_flag(int speed, speed_t *flag)
 	case 57600: *flag = B57600; return 0;
 	case 115200: *flag = B115200; return 0;
 	case 230400: *flag = B230400; return 0;
+#ifdef B460800
+	case 460800: *flag = B460800; return 0;
+#endif
+#ifdef B500000
+	case 500000: *flag = B500000; return 0;
+#endif
+#ifdef B576000
+	case 576000: *flag = B576000; return 0;
+#endif
+#ifdef B921600
+	case 921600: *flag = B921600; return 0;
+#endif
+#ifdef B1000000
+	case 1000000: *flag = B1000000; return 0;
+#endif
+#ifdef B1152000
+	case 1152000: *flag = B1152000; return 0;
+#endif
+#ifdef B1500000
+	case 1500000: *flag = B1500000; return 0;
+#endif
+#ifdef B2000000
+	case 2000000: *flag = B2000000; return 0;
+#endif
+#ifdef B2500000
+	case 2500000: *flag = B2500000; return 0;
+#endif
+#ifdef B3000000
+	case 3000000: *flag = B3000000; return 0;
+#endif
+#ifdef B3500000
+	case 3500000: *flag = B3500000; return 0;
+#endif
+#ifdef B4000000
+	case 4000000: *flag = B4000000; return 0;
+#endif
 	default:
 		printf("unknown speed: %d\n",speed);
 		return -1;
