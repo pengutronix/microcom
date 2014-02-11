@@ -265,10 +265,15 @@ int main(int argc, char *argv[])
 		sigaction(SIGQUIT, &sact, NULL);
 	}
 
-	/* run thhe main program loop */
-	mux_loop(ios);
+	/* run the main program loop */
+	ret = mux_loop(ios);
+	if (ret)
+		fprintf(stderr, "%s\n", strerror(-ret));
 
-	microcom_exit(0);
+	ios->exit(ios);
 
-	return 0;
+	if (!listenonly)
+		tcsetattr(STDIN_FILENO, TCSANOW, &sots);
+
+	exit(ret ? 1 : 0);
 }
