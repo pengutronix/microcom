@@ -1,3 +1,39 @@
+2014-02-11  Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+
+  * ChangeLog, Makefile: release 2014.02.0
+
+2014-02-11  Marc Kleine-Budde <mkl@pengutronix.de>
+
+  * microcom.c: microcom: add more baudrates  This patch adds support for more
+  baudrates.  Acked-by: Sascha Hauer <s.hauer@pengutronix.de>
+
+  * commands.c, microcom.c, microcom.h: microcom: fix check if
+  baudrate_to_flag() fails  baudrate_to_flag() returns a "speed_t" and -1 in
+  case of an error. As speed_t is usually unsinged int an error is never
+  detected.  This patch converts baudrate_to_flag() to pass speed_t via
+  reference, so that the return value can be used to indicate an error. 
+  Acked-by: Sascha Hauer <s.hauer@pengutronix.de>
+
+2014-02-11  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * microcom.c: check mux_loop return value, exit with error  If mux_loop
+  returns with an error report it and exit microcom with an error code.
+
+  * microcom.h, mux.c: let mux_loop return an error  Instead of void.
+
+  * mux.c: use -1 as invalid filedescriptor  0 is a valid filedescriptor, so
+  don't use it to indicate a logfile not being opened.
+
+2014-02-06  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * microcom.c, microcom.h, mux.c: Add support for listononly option  With the
+  listenonly option microcom will only listen on the port, but never send
+  anything back. Also the local terminal is not modified. This is useful for
+  noninteractively creating logfiles from remote ports.
+
+  * commands.c, microcom.c, microcom.h, mux.c: Add logfile support  logfile
+  support was lost during restructuring earlier. Add it again.
+
 2014-01-13  Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
   * ChangeLog, Makefile: release 2014.01.1
