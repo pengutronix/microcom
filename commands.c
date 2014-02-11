@@ -11,7 +11,7 @@
 
 static int cmd_speed(int argc, char *argv[])
 {
-	int speed;
+	int speed, ret;
 	speed_t flag;
 
 	if (argc < 2) {
@@ -20,8 +20,8 @@ static int cmd_speed(int argc, char *argv[])
 	}
 
 	speed = strtoul(argv[1], NULL, 0);
-	flag = baudrate_to_flag(speed);
-	if (flag < 0) {
+	ret = baudrate_to_flag(speed, &flag);
+	if (ret) {
 		printf("invalid speed %d\n", speed);
 		return 1;
 	}

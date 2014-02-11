@@ -58,27 +58,27 @@ void restore_terminal(void)
 	tcsetattr(STDIN_FILENO, TCSANOW, &sots);
 }
 
-speed_t baudrate_to_flag(int speed)
+int baudrate_to_flag(int speed, speed_t *flag)
 {
 	switch(speed) {
-	case 50: return B50;
-	case 75: return B75;
-	case 110: return B110;
-	case 134: return B134;
-	case 150: return B150;
-	case 200: return B200;
-	case 300: return B300;
-	case 600: return B600;
-	case 1200: return B1200;
-	case 1800: return B1800;
-	case 2400: return B2400;
-	case 4800: return B4800;
-	case 9600: return B9600;
-	case 19200: return B19200;
-	case 38400: return B38400;
-	case 57600: return B57600;
-	case 115200: return B115200;
-	case 230400: return B230400;
+	case 50: *flag = B50; return 0;
+	case 75: *flag = B75; return 0;
+	case 110: *flag = B110; return 0;
+	case 134: *flag = B134; return 0;
+	case 150: *flag = B150; return 0;
+	case 200: *flag = B200; return 0;
+	case 300: *flag = B300; return 0;
+	case 600: *flag = B600; return 0;
+	case 1200: *flag = B1200; return 0;
+	case 1800: *flag = B1800; return 0;
+	case 2400: *flag = B2400; return 0;
+	case 4800: *flag = B4800; return 0;
+	case 9600: *flag = B9600; return 0;
+	case 19200: *flag = B19200; return 0;
+	case 38400: *flag = B38400; return 0;
+	case 57600: *flag = B57600; return 0;
+	case 115200: *flag = B115200; return 0;
+	case 230400: *flag = B230400; return 0;
 	default:
 		printf("unknown speed: %d\n",speed);
 		return -1;
@@ -239,8 +239,8 @@ int main(int argc, char *argv[])
 			exit(1);
 	}
 
-	flag = baudrate_to_flag(current_speed);
-	if (flag < 0)
+	ret = baudrate_to_flag(current_speed, &flag);
+	if (ret)
 		exit(1);
 
 	current_flow = FLOW_NONE;
