@@ -204,7 +204,6 @@ static void cook_buf(struct ios_ops *ios, unsigned char *buf, int num)
 		buf += current;
 		current = 0;
 	}			/* while - end of processing all the charactes in the buffer */
-	return;
 }
 
 static int logfd = -1;
