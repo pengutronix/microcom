@@ -181,6 +181,22 @@ static int handle_command(unsigned char *buf, int len)
 	return len;
 }
 
+char *answerback;
+
+static void handle_special_characters(struct ios_ops *ios, unsigned char *buf, int num)
+{
+	if (!answerback)
+		return;
+
+	while (num) {
+		if (*buf == 5)
+			write(ios->fd, answerback, strlen(answerback));
+
+		buf++;
+		num--;
+	}
+}
+
 /* handle escape characters, writing to output */
 static void cook_buf(struct ios_ops *ios, unsigned char *buf, int num)
 {
@@ -257,6 +273,8 @@ int mux_loop(struct ios_ops *ios)
 				return -errno;
 			if (len == 0)
 				return -EINVAL;
+
+			handle_special_characters(ios, buf, len);
 
 			/*
 			 * BUG?: this is telnet specific? Check for IAC

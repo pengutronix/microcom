@@ -69,6 +69,7 @@ extern struct ios_ops *ios;
 extern int debug;
 extern int opt_force;
 extern int listenonly;
+extern char *answerback;
 
 struct cmd {
 	char *name;
