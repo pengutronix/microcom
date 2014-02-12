@@ -175,14 +175,17 @@ void main_usage(int exitcode, char *str, char *dev)
 {
 	fprintf(stderr, "Usage: microcom [options]\n"
 		" [options] include:\n"
-		"    -p devfile                  use the specified serial port device (%s);\n"
-		"    -s speed                    use specified baudrate (%d)\n"
-		"    -t host:port                work in telnet (rfc2217) mode\n"
-		"    -c interface:rx_id:tx_id    work in CAN mode\n"
-		"                                default: (%s:%x:%x)\n"
-		"    -f                          ignore existing lock file\n"
-		"    -d                          output debugging info\n"
-		"    -l <logfile>                log output to <logfile>\n",
+		"    -p, --port=<devfile>                 use the specified serial port device (%s);\n"
+		"    -s, --speed=<speed>                  use specified baudrate (%d)\n"
+		"    -t, --telnet=<host:port>             work in telnet (rfc2217) mode\n"
+		"    -c, --can=<interface:rx_id:tx_id>    work in CAN mode\n"
+		"                                         default: (%s:%x:%x)\n"
+		"    -f, --force                          ignore existing lock file\n"
+		"    -d, --debug                          output debugging info\n"
+		"    -l, --logfile=<logfile>              log output to <logfile>\n"
+		"    -o, --listenonly                     Do not modify local terminal, do not send input\n"
+		"                                         from stdin\n"
+		"    -h, --help                           This help\n",
 		DEFAULT_DEVICE, DEFAULT_BAUDRATE,
 		DEFAULT_CAN_INTERFACE, DEFAULT_CAN_ID, DEFAULT_CAN_ID);
 	fprintf(stderr, "Exitcode %d - %s %s\n\n", exitcode, str, dev);
