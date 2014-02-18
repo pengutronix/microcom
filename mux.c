@@ -210,7 +210,9 @@ static void handle_receive_buf(struct ios_ops *ios, unsigned char *buf, int len)
 			break;
 		case 5:
 			write_receive_buf(sendbuf, buf - sendbuf);
-			write(ios->fd, answerback, strlen(answerback));
+			if (answerback)
+				write(ios->fd, answerback, strlen(answerback));
+
 			buf += 1;
 			len -= 1;
 			sendbuf = buf;
