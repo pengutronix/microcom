@@ -202,6 +202,7 @@ static void handle_receive_buf(struct ios_ops *ios, unsigned char *buf, int len)
 	while (len) {
 		switch (*buf) {
 		case IAC:
+			/* BUG: this is telnet specific */
 			write_receive_buf(sendbuf, buf - sendbuf);
 			i = handle_command(buf, len);
 			buf += i;
