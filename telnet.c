@@ -21,6 +21,8 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 #include "microcom.h"
 
@@ -79,13 +81,12 @@ static void telnet_exit(struct ios_ops *ios)
 
 struct ios_ops *telnet_init(char *hostport)
 {
-	int sock;
-	struct sockaddr_in server_in;
-	char *host = hostport;
-	char *portstr;
-	int port = 23;
-	struct hostent *hp;
+	char *port;
+	int ret;
+	struct addrinfo *addrinfo, *ai;
+	struct addrinfo hints;
 	struct ios_ops *ios;
+	char connected_host[256], connected_port[30];
 
 	ios = malloc(sizeof(*ios));
 	if (!ios)
@@ -96,40 +97,71 @@ struct ios_ops *telnet_init(char *hostport)
 	ios->send_break = telnet_send_break;
 	ios->exit = telnet_exit;
 
-	portstr = strchr(hostport, ':');
-	if (portstr) {
-		*portstr = 0;
-		portstr++;
-		port = atoi(portstr);
+	memset(&hints, '\0', sizeof(hints));
+	hints.ai_flags = AI_ADDRCONFIG;
+	hints.ai_socktype = SOCK_STREAM;
+
+	if (hostport[0] == '[') {
+		char *s = strchr(++hostport, ']');
+
+		if (s)
+			/* terminate hostport after host portion */
+			*s = '\0';
+
+		if (s && s[1] == ':')
+			port = s + 2;
+		else if (s && s[1] == '\0')
+			port = "23";
+		else {
+			fprintf(stderr, "failed to parse host:port");
+			free(ios);
+			return NULL;
+		}
+	} else {
+		port = strchr(hostport, ':');
+		if (port) {
+			/* terminate hostport after host portion */
+			*port = '\0';
+
+			port += 1;
+		} else
+			port = "23";
 	}
 
-	hp = gethostbyname(host);
-	if (!hp) {
-		perror("gethostbyname");
+	ret = getaddrinfo(hostport, port, &hints, &addrinfo);
+	if (ret) {
+		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(ret));
 		return NULL;
 	}
 
-	host = inet_ntoa(*(struct in_addr*)(hp->h_addr_list[0]));
-	
-	memset(&server_in, 0, sizeof(server_in));     /* Zero out structure */
-	server_in.sin_family      = AF_INET;             /* Internet address family */
-	server_in.sin_addr.s_addr = inet_addr(host);   /* Server IP address */
-	server_in.sin_port        = htons(port); /* Server port */
+	for (ai = addrinfo; ai != NULL; ai = ai->ai_next) {
+		int sock = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+		if (sock < 0)
+			continue;
 
-	sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (sock < 0) {
-		printf("socket() failed\n");
-		return NULL;
+		if (connect(sock, ai->ai_addr, ai->ai_addrlen) < 0) {
+			close(sock);
+			continue;
+		}
+
+		ios->fd = sock;
+
+		ret = getnameinfo(ai->ai_addr, ai->ai_addrlen,
+				  connected_host, sizeof(connected_host),
+				  connected_port, sizeof(connected_port),
+				  NI_NUMERICHOST | NI_NUMERICSERV);
+		if (ret)
+			fprintf(stderr, "getnameinfo: %s\n", gai_strerror(ret));
+		else
+			printf("connected to %s (port %s)\n", connected_host, connected_port);
+		goto out;
 	}
 
-	/* Establish the connection to the echo server */
-	if (connect(sock, (struct sockaddr *) &server_in, sizeof(server_in)) < 0) {
-		perror("connect");
-		return NULL;
-	}
-	ios->fd = sock;
-	printf("connected to %s (port %d)\n", host, port);
-	
+	perror("failed to connect");
+	free(ios);
+	ios = NULL;
+out:
+	freeaddrinfo(addrinfo);
 	return ios;
 }
 
