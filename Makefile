@@ -21,7 +21,7 @@
 
 CFLAGS		+= -Wall -O2 -g
 LDLIBS		+= -lreadline -lpthread
-CPPFLAGS	+= -DPKG_VERSION="\"2014.02.0\"" -DPF_CAN=29 -DAF_CAN=PF_CAN
+CPPFLAGS	+= -DPKG_VERSION="\"2014.09.0\"" -DPF_CAN=29 -DAF_CAN=PF_CAN
 
 
 microcom: microcom.o mux.o serial.o telnet.o can.o commands.o parser.o commands_fsl_imx.o

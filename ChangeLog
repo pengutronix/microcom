@@ -1,3 +1,36 @@
+2014-09-22  Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+
+  * Makefile: release 2014.09.0
+
+2014-09-11  Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+
+  * telnet.c: make telnet mode address family agnostic  Use getaddrinfo et al
+  over gethostbyname. This allows (depending on system configuration) to use
+  ipv6 connections. As an added bonus allow specifying ipv6 addresses in the
+  usual square bracketed syntax.
+
+2014-02-18  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * mux.c: Only send answerback string if one is set
+
+2014-02-12  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * mux.c: factor out handle_receive_buf function  Instead of handling special
+  characters in two places.
+
+  * microcom.c, microcom.h, mux.c: Add ENQ/answerback support  This adds
+  support for a configurable answerback string for an enquiry character (ENQ,
+  ASCII 0x5). The answerback string can be specified using the --answerback
+  option. If this option is not given, no answerback string is sent which is
+  the behaviour without this patch.
+
+  * microcom.c: update help text  Document the long options and some missing
+  options.
+
+2014-02-11  Sascha Hauer <s.hauer@pengutronix.de>
+
+  * mux.c: remove unnecessary return
+
 2014-02-11  Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
   * ChangeLog, Makefile: release 2014.02.0
