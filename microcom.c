@@ -30,6 +30,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "config.h"
+
 static struct termios sots;	/* old stdout/in termios settings to restore */
 
 struct ios_ops *ios;
@@ -274,9 +276,14 @@ int main(int argc, char *argv[])
 
 	if (telnet)
 		ios = telnet_init(hostport);
-	else if (can)
+	else if (can) {
+#ifdef USE_CAN
 		ios = can_init(interfaceid);
-	else
+#else
+		fprintf(stderr, "CAN mode not supported\n");
+		exit(EXIT_FAILURE);
+#endif
+	} else
 		ios = serial_init(device);
 
 	if (!ios)
