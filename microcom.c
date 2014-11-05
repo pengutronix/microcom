@@ -187,6 +187,7 @@ void main_usage(int exitcode, char *str, char *dev)
 		"                                         from stdin\n"
 		"    -a,  --answerback=<str>              specify the answerback string sent as response to\n"
 		"                                         an ENQ (ASCII 0x05) Character\n"
+		"    -v, --version                        print version string\n"
 		"    -h, --help                           This help\n",
 		DEFAULT_DEVICE, DEFAULT_BAUDRATE,
 		DEFAULT_CAN_INTERFACE, DEFAULT_CAN_ID, DEFAULT_CAN_ID);
@@ -221,16 +222,21 @@ int main(int argc, char *argv[])
 		{ "logfile", required_argument, 0, 'l'},
 		{ "listenonly", no_argument, 0, 'o'},
 		{ "answerback", required_argument, 0, 'a'},
+		{ "version", no_argument, 0, 'v' },
 		{ 0, 0, 0, 0},
 	};
 
-	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dfl:oi:a:", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dfl:oi:a:v", long_options, NULL)) != -1) {
 		switch (opt) {
 			case '?':
 				main_usage(1, "", "");
 				break;
 			case 'h':
 				main_usage(0, "", "");
+				break;
+			case 'v':
+				printf("%s\n", PACKAGE_VERSION);
+				exit(EXIT_SUCCESS);
 				break;
 			case 'p':
 				device = optarg;
