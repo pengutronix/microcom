@@ -49,7 +49,7 @@ struct can_data {
 static struct can_data data;
 static pthread_t can_thread;
 
-static int can_set_speed(struct ios_ops *ios, speed_t speed)
+static int can_set_speed(struct ios_ops *ios, unsigned long speed)
 {
 	return 0;
 }

@@ -26,15 +26,14 @@
 
 #include "microcom.h"
 
-static int telnet_set_speed(struct ios_ops *ios, speed_t speed)
+static int telnet_set_speed(struct ios_ops *ios, unsigned long speed)
 {
 
 //	unsigned char buf1[] = {IAC, WILL , COM_PORT_OPTION};
 	unsigned char buf2[] = {IAC, SB, COM_PORT_OPTION, SET_BAUDRATE_CS, 0, 0, 0, 0, IAC, SE};
 	int *speedp = (int *)&buf2[4];
 
-//	write(fd, buf1, 3);
-	*speedp = htonl(flag_to_baudrate(speed));
+	*speedp = htonl(speed);
 	write(ios->fd, buf2, 10);
 
 	return 0;

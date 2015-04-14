@@ -38,7 +38,7 @@
 #define DEFAULT_CAN_ID (0x200)
 
 struct ios_ops {
-	int (*set_speed)(struct ios_ops *, speed_t speed);
+	int (*set_speed)(struct ios_ops *, unsigned long speed);
 #define FLOW_NONE	0
 #define FLOW_SOFT	1
 #define FLOW_HARD	2
@@ -110,7 +110,7 @@ void commands_fsl_imx_init(void);
         (void) (&_max1 == &_max2);              \
         _max1 > _max2 ? _max1 : _max2; })
 
-extern int current_speed;
+extern unsigned long current_speed;
 extern int current_flow;
 int do_commandline(void);
 int do_script(char *script);

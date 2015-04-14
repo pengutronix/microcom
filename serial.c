@@ -47,13 +47,20 @@ static void init_comm(struct termios *pts)
 	pts->c_iflag &= ~ICRNL;
 }
 
-static int serial_set_speed(struct ios_ops *ios, speed_t speed)
+static int serial_set_speed(struct ios_ops *ios, unsigned long speed)
 {
 	struct termios pts;	/* termios settings on port */
+	speed_t flag;
+	int ret;
 
 	tcgetattr(ios->fd, &pts);
-	cfsetospeed(&pts, speed);
-	cfsetispeed(&pts, speed);
+
+	ret = baudrate_to_flag(speed, &flag);
+	if (ret)
+		return ret;
+
+	cfsetospeed(&pts, flag);
+	cfsetispeed(&pts, flag);
 	tcsetattr(ios->fd, TCSANOW, &pts);
 
 	return 0;

@@ -196,7 +196,7 @@ void main_usage(int exitcode, char *str, char *dev)
 }
 
 int opt_force = 0;
-int current_speed = DEFAULT_BAUDRATE;
+unsigned long current_speed = DEFAULT_BAUDRATE;
 int current_flow = FLOW_NONE;
 int listenonly = 0;
 
@@ -209,7 +209,6 @@ int main(int argc, char *argv[])
 	char *interfaceid = NULL;
 	char *device = DEFAULT_DEVICE;
 	char *logfile = NULL;
-	speed_t flag;
 
 	struct option long_options[] = {
 		{ "help", no_argument, 0, 'h' },
@@ -303,12 +302,10 @@ int main(int argc, char *argv[])
 			exit(1);
 	}
 
-	ret = baudrate_to_flag(current_speed, &flag);
-	if (ret)
-		exit(1);
-
 	current_flow = FLOW_NONE;
-	ios->set_speed(ios, flag);
+	if (ios->set_speed(ios, current_speed))
+		exit(EXIT_FAILURE);
+
 	ios->set_flow(ios, current_flow);
 
 	if (!listenonly) {

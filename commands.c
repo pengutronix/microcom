@@ -11,24 +11,23 @@
 
 static int cmd_speed(int argc, char *argv[])
 {
-	int speed, ret;
-	speed_t flag;
+	unsigned long speed;
+	int ret;
 
 	if (argc < 2) {
-		printf("current speed: %d\n", current_speed);
+		printf("current speed: %lu\n", current_speed);
 		return 0;
 	}
 
 	speed = strtoul(argv[1], NULL, 0);
-	ret = baudrate_to_flag(speed, &flag);
+
+	ret = ios->set_speed(ios, speed);
 	if (ret) {
-		printf("invalid speed %d\n", speed);
-		return 1;
+		fprintf(stderr, "invalid speed %lu\n", speed);
+		return ret;
 	}
 
 	current_speed = speed;
-	ios->set_speed(ios, flag);
-
 	return 0;
 }
 
