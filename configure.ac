@@ -33,7 +33,7 @@ AC_ARG_ENABLE([can], [AS_HELP_STRING([--enable-can], [enable can mode @<:@defaul
 
 AS_IF([test "x$enable_can" != "xno"],
       [AC_CHECK_HEADERS([linux/can.h linux/can/raw.h],,
-			[AS_IF([test "x$enable_can" = "xcheck"], [enable_can=no], [AC_MSG_ERROR([can depends on Linux can headers])])])
+			[AS_IF([test "x$enable_can" != "xyes"], [enable_can=no; break], [AC_MSG_ERROR([can depends on Linux can headers])])])
        AS_IF([test "x$enable_can" = "xcheck"], [enable_can=yes])
       ])
 
