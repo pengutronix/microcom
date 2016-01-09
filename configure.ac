@@ -1,7 +1,7 @@
 AC_INIT([microcom], [2014.09.0])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([1.11.1 silent-rules])
+AM_INIT_AUTOMAKE([dist-xz])
 
 AC_PREREQ([2.69])
 AC_CONFIG_SRCDIR([commands_fsl_imx.c])
