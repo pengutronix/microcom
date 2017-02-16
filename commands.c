@@ -72,6 +72,68 @@ static int cmd_flow(int argc, char *argv[])
 	return 0;
 }
 
+static int current_dtr = 0;
+static int current_rts = 0;
+
+static int cmd_set_handshake_line(int argc, char *argv[])
+{
+	int enable;
+	int ret = 0;
+	int pin = 0;
+
+	if (!ios->set_handshake_line) {
+		printf("function not supported \"%s\"\n", argv[0]);
+		return 1;
+	}
+
+	if (!strncmp(argv[0], "dtr", 3))
+		pin = PIN_DTR;
+	else if (!strncmp(argv[0], "rts", 3))
+		pin = PIN_RTS;
+
+	if (!pin) {
+		printf("unknown pin \"%s\"\n", argv[0]);
+		return 1;
+	}
+
+	if (argc < 2) {
+		switch (pin) {
+		case PIN_DTR:
+			printf("current dtr: \"%d\"\n", current_dtr);
+			break;
+		case PIN_RTS:
+			printf("current rts: \"%d\"\n", current_rts);
+			break;
+		}
+		return 0;
+	}
+
+	if (!strncmp(argv[1], "1", strlen(argv[1]))) {
+		enable = 1;
+	} else if (!strncmp(argv[1], "0", strlen(argv[1]))) {
+		enable = 0;
+	} else {
+		printf("unknown dtr state \"%s\"\n", argv[1]);
+		return 1;
+	}
+
+	printf("setting %s: \"%d\"\n", argv[0], enable);
+	ret = ios->set_handshake_line(ios, pin, enable);
+	if (ret)
+		return ret;
+
+	switch (pin) {
+	case PIN_DTR:
+		current_dtr = enable;
+		break;
+	case PIN_RTS:
+		current_rts = enable;
+		break;
+	}
+
+	return 0;
+}
+
 static int cmd_exit(int argc, char *argv[])
 {
 	return MICROCOM_CMD_START;
@@ -147,6 +209,16 @@ static struct cmd cmds[] = {
 		.fn = cmd_flow,
 		.info = "set flow control",
 		.help = "flow hard|soft|none",
+	}, {
+		.name = "dtr",
+		.fn = cmd_set_handshake_line,
+		.info = "set dtr value",
+		.help = "dtr 1|0",
+	}, {
+		.name = "rts",
+		.fn = cmd_set_handshake_line,
+		.info = "set rts value",
+		.help = "rts 1|0",
 	}, {
 		.name = "break",
 		.fn = cmd_break,

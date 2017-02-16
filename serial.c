@@ -21,6 +21,7 @@
 ****************************************************************************/
 
 #include <limits.h>
+#include <sys/ioctl.h>
 #include <arpa/telnet.h>
 
 #include "microcom.h"
@@ -45,6 +46,28 @@ static void init_comm(struct termios *pts)
 	 */
 	pts->c_oflag &= ~ONLCR;
 	pts->c_iflag &= ~ICRNL;
+}
+
+static int serial_set_handshake_line(struct ios_ops *ios, int pin, int enable)
+{
+	int flag;
+	int ret;
+
+	switch (pin) {
+	case PIN_DTR:
+		flag = TIOCM_DTR;
+		break;
+	case PIN_RTS:
+		flag = TIOCM_RTS;
+		break;
+	}
+
+	if (enable)
+		ret = ioctl(ios->fd, TIOCMBIC, &flag);
+	else
+		ret = ioctl(ios->fd, TIOCMBIS, &flag);
+
+	return ret;
 }
 
 static int serial_set_speed(struct ios_ops *ios, unsigned long speed)
@@ -137,6 +160,7 @@ struct ios_ops * serial_init(char *device)
 
 	ops->set_speed = serial_set_speed;
 	ops->set_flow = serial_set_flow;
+	ops->set_handshake_line = serial_set_handshake_line;
 	ops->send_break = serial_send_break;
 	ops->exit = serial_exit;
 
