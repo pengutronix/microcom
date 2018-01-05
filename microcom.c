@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
 
 	if (!listenonly) {
 		printf("Escape character: Ctrl-\\\n");
-		printf("Type the escape character followed by c to get to the menu or q to quit\n");
+		printf("Type the escape character to get to the prompt.\n");
 
 		/* Now deal with the local terminal side */
 		tcgetattr(STDIN_FILENO, &sots);
