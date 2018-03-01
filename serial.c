@@ -63,9 +63,9 @@ static int serial_set_handshake_line(struct ios_ops *ios, int pin, int enable)
 	}
 
 	if (enable)
-		ret = ioctl(ios->fd, TIOCMBIC, &flag);
-	else
 		ret = ioctl(ios->fd, TIOCMBIS, &flag);
+	else
+		ret = ioctl(ios->fd, TIOCMBIC, &flag);
 
 	return ret;
 }
