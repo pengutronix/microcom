@@ -203,7 +203,7 @@ struct ios_ops * serial_init(char *device)
 	close(fd);
 force:
 	/* open the device */
-	fd = open(device, O_RDWR);
+	fd = open(device, O_RDWR | O_NONBLOCK);
 	ops->fd = fd;
 
 	if (fd < 0) {
