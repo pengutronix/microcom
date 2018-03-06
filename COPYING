@@ -11,7 +11,8 @@ line reading:
 
 	Signed-off-by: Random J Developer <random@developer.example.org>
 
-with your real name and email address at the end of the patch description.
+with your real name and email address at the end of the patch description
+and send it to oss-tools@pengutronix.de.
 --------------------------------------------------------------------------------
 
                     GNU GENERAL PUBLIC LICENSE

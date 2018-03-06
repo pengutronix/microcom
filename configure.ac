@@ -1,4 +1,4 @@
-AC_INIT([microcom], [2016.01.0])
+AC_INIT([microcom], [2016.01.0], [oss-tools@pengutronix.de])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([dist-xz])
