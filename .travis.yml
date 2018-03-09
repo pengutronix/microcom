@@ -1,0 +1,7 @@
+language: c
+compiler: gcc
+dist: trusty
+script:
+  - autoreconf -fi
+  - ./configure
+  - make distcheck
