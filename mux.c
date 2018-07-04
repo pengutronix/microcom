@@ -299,8 +299,10 @@ int mux_loop(struct ios_ops *ios)
 			len = read(ios->fd, buf, BUFSIZE);
 			if (len < 0)
 				return -errno;
-			if (len == 0)
-				return -EINVAL;
+			if (len == 0) {
+				fprintf(stderr, "Got EOF from port\n");
+				return 0;
+			}
 
 			handle_receive_buf(ios, buf, len);
 		}
