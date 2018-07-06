@@ -162,13 +162,13 @@ static int handle_command(unsigned char *buf, int len)
 			dprintf("WILL ");
 			break;
 		case WONT:
-			dprintf("WILL ");
+			dprintf("WONT ");
 			break;
 		case DO:
-			dprintf("WILL ");
+			dprintf("DO ");
 			break;
 		case DONT:
-			dprintf("WILL ");
+			dprintf("DONT ");
 			break;
 		default:
 			dprintf("%d ", buf[i]);
@@ -299,8 +299,10 @@ int mux_loop(struct ios_ops *ios)
 			len = read(ios->fd, buf, BUFSIZE);
 			if (len < 0)
 				return -errno;
-			if (len == 0)
-				return -EINVAL;
+			if (len == 0) {
+				fprintf(stderr, "Got EOF from port\n");
+				return 0;
+			}
 
 			handle_receive_buf(ios, buf, len);
 		}
