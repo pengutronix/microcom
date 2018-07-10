@@ -30,85 +30,85 @@ static int do_com_port_option(unsigned char *buf, int len)
 	while (i < len) {
 		switch (buf[i]) {
 		case IAC:
-			dprintf("IAC ");
+			dbg_printf("IAC ");
 			return i + 1;
 		case SET_BAUDRATE_CS:
-			dprintf("SET_BAUDRATE_CS ");
+			dbg_printf("SET_BAUDRATE_CS ");
 			break;
 		case SET_DATASIZE_CS:
-			dprintf("SET_DATASIZE_CS ");
+			dbg_printf("SET_DATASIZE_CS ");
 			break;
 		case SET_PARITY_CS:
-			dprintf("SET_PARITY_CS ");
+			dbg_printf("SET_PARITY_CS ");
 			break;
 		case SET_STOPSIZE_CS:
-			dprintf("SET_STOPSIZE_CS ");
+			dbg_printf("SET_STOPSIZE_CS ");
 			break;
 		case SET_CONTROL_CS:
-			dprintf("SET_CONTROL_CS ");
+			dbg_printf("SET_CONTROL_CS ");
 			break;
 		case NOTIFY_LINESTATE_CS:
-			dprintf("NOTIFY_LINESTATE_CS ");
+			dbg_printf("NOTIFY_LINESTATE_CS ");
 			break;
 		case NOTIFY_MODEMSTATE_CS:
-			dprintf("NOTIFY_MODEMSTATE_CS ");
+			dbg_printf("NOTIFY_MODEMSTATE_CS ");
 			break;
 		case FLOWCONTROL_SUSPEND_CS:
-			dprintf("FLOWCONTROL_SUSPEND_CS ");
+			dbg_printf("FLOWCONTROL_SUSPEND_CS ");
 			break;
 		case FLOWCONTROL_RESUME_CS:
-			dprintf("FLOWCONTROL_RESUME_CS ");
+			dbg_printf("FLOWCONTROL_RESUME_CS ");
 			break;
 		case SET_LINESTATE_MASK_CS:
-			dprintf("SET_LINESTATE_MASK_CS ");
+			dbg_printf("SET_LINESTATE_MASK_CS ");
 			break;
 		case SET_MODEMSTATE_MASK_CS:
-			dprintf("SET_MODEMSTATE_MASK_CS ");
+			dbg_printf("SET_MODEMSTATE_MASK_CS ");
 			break;
 		case PURGE_DATA_CS:
-			dprintf("PURGE_DATA_CS ");
+			dbg_printf("PURGE_DATA_CS ");
 			break;
 		case SET_BAUDRATE_SC:
-			dprintf("SET_BAUDRATE_SC %d ", ntohl(*(int *)&buf[i + 1]));
+			dbg_printf("SET_BAUDRATE_SC %d ", ntohl(*(int *)&buf[i + 1]));
 			i += 4;
 			break;
 		case SET_DATASIZE_SC:
-			dprintf("SET_DATASIZE_SC ");
+			dbg_printf("SET_DATASIZE_SC ");
 			break;
 		case SET_PARITY_SC:
-			dprintf("SET_PARITY_SC ");
+			dbg_printf("SET_PARITY_SC ");
 			break;
 		case SET_STOPSIZE_SC:
-			dprintf("SET_STOPSIZE_SC ");
+			dbg_printf("SET_STOPSIZE_SC ");
 			break;
 		case SET_CONTROL_SC:
 			i++;
-			dprintf("SET_CONTROL_SC 0x%02x ", buf[i]);
+			dbg_printf("SET_CONTROL_SC 0x%02x ", buf[i]);
 			break;
 		case NOTIFY_LINESTATE_SC:
-			dprintf("NOTIFY_LINESTATE_SC ");
+			dbg_printf("NOTIFY_LINESTATE_SC ");
 			break;
 		case NOTIFY_MODEMSTATE_SC:
 			i++;
-			dprintf("NOTIFY_MODEMSTATE_SC 0x%02x ", buf[i]);
+			dbg_printf("NOTIFY_MODEMSTATE_SC 0x%02x ", buf[i]);
 			break;
 		case FLOWCONTROL_SUSPEND_SC:
-			dprintf("FLOWCONTROL_SUSPEND_SC ");
+			dbg_printf("FLOWCONTROL_SUSPEND_SC ");
 			break;
 		case FLOWCONTROL_RESUME_SC:
-			dprintf("FLOWCONTROL_RESUME_SC ");
+			dbg_printf("FLOWCONTROL_RESUME_SC ");
 			break;
 		case SET_LINESTATE_MASK_SC:
-			dprintf("SET_LINESTATE_MASK_SC ");
+			dbg_printf("SET_LINESTATE_MASK_SC ");
 			break;
 		case SET_MODEMSTATE_MASK_SC:
-			dprintf("SET_MODEMSTATE_MASK_SC ");
+			dbg_printf("SET_MODEMSTATE_MASK_SC ");
 			break;
 		case PURGE_DATA_SC:
-			dprintf("PURGE_DATA_SC ");
+			dbg_printf("PURGE_DATA_SC ");
 			break;
 		default:
-			dprintf("%d ", buf[i]);
+			dbg_printf("%d ", buf[i]);
 			break;
 		}
 		i++;
@@ -124,13 +124,13 @@ static int do_subneg(unsigned char *buf, int len)
 	while (i < len) {
 		switch (buf[i]) {
 		case COM_PORT_OPTION:
-			dprintf("COM_PORT_OPTION ");
+			dbg_printf("COM_PORT_OPTION ");
 			return do_com_port_option(&buf[i + 1], len - i) + 1;
 		case IAC:
-			dprintf("IAC ");
+			dbg_printf("IAC ");
 			return len - i;
 		default:
-			dprintf("%d ", buf[i]);
+			dbg_printf("%d ", buf[i]);
 			break;
 		}
 		i++;
@@ -146,38 +146,38 @@ static int handle_command(unsigned char *buf, int len)
 	while (i < len) {
 		switch (buf[i]) {
 		case SB:
-			dprintf("SB ");
+			dbg_printf("SB ");
 			i += do_subneg(&buf[i+1], len - i);
 			break;
 		case IAC:
-			dprintf("IAC ");
+			dbg_printf("IAC ");
 			break;
 		case COM_PORT_OPTION:
-			dprintf("COM_PORT_OPTION ");
+			dbg_printf("COM_PORT_OPTION ");
 			break;
 		case SE:
-			dprintf("SE ");
+			dbg_printf("SE ");
 			break;
 		case WILL:
-			dprintf("WILL ");
+			dbg_printf("WILL ");
 			break;
 		case WONT:
-			dprintf("WONT ");
+			dbg_printf("WONT ");
 			break;
 		case DO:
-			dprintf("DO ");
+			dbg_printf("DO ");
 			break;
 		case DONT:
-			dprintf("DONT ");
+			dbg_printf("DONT ");
 			break;
 		default:
-			dprintf("%d ", buf[i]);
+			dbg_printf("%d ", buf[i]);
 			break;
 		}
 		i++;
 	}
 
-	dprintf("\n");
+	dbg_printf("\n");
 	return len;
 }
 
