@@ -1,6 +1,10 @@
 language: c
 compiler: gcc
 dist: trusty
+addons:
+  apt:
+    packages:
+      - autoconf-archive
 script:
   - autoreconf -fi
   - ./configure
