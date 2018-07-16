@@ -118,10 +118,19 @@ extern int current_flow;
 int do_commandline(void);
 int do_script(char *script);
 
-#define dprintf(fmt,args...)  ({ if (debug) printf (fmt ,##args); })
+#define dbg_printf(fmt,args...)  ({ if (debug) printf(fmt ,##args); })
+
+/*
+ * Some telnet options according to
+ * https://www.iana.org/assignments/telnet-options/telnet-options.xhtmls
+ */
+
+#define TELNET_OPTION_BINARY_TRANSMISSION		0
+#define TELNET_OPTION_ECHO				1
+#define TELNET_OPTION_SUPPRESS_GO_AHEAD			3
+#define TELNET_OPTION_COM_PORT_CONTROL			44
 
 /* RFC2217 */
-#define COM_PORT_OPTION		 44
 #define SET_BAUDRATE_CS		  1
 #define SET_DATASIZE_CS		  2
 #define SET_PARITY_CS		  3

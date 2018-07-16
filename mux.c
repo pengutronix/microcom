@@ -20,165 +20,190 @@
 #include "microcom.h"
 #include <arpa/telnet.h>
 #include <arpa/inet.h>
+#include <stdbool.h>
 
 #define BUFSIZE 1024
 
-static int do_com_port_option(unsigned char *buf, int len)
+/* This is called with buf[-2:0] being IAC SB COM_PORT_OPTION */
+static int do_com_port_option(struct ios_ops *ios, unsigned char *buf, int len)
 {
-	int i = 0;
+	int i = 2;
 
-	while (i < len) {
-		switch (buf[i]) {
-		case IAC:
-			dprintf("IAC ");
-			return i + 1;
-		case SET_BAUDRATE_CS:
-			dprintf("SET_BAUDRATE_CS ");
-			break;
-		case SET_DATASIZE_CS:
-			dprintf("SET_DATASIZE_CS ");
-			break;
-		case SET_PARITY_CS:
-			dprintf("SET_PARITY_CS ");
-			break;
-		case SET_STOPSIZE_CS:
-			dprintf("SET_STOPSIZE_CS ");
-			break;
-		case SET_CONTROL_CS:
-			dprintf("SET_CONTROL_CS ");
-			break;
-		case NOTIFY_LINESTATE_CS:
-			dprintf("NOTIFY_LINESTATE_CS ");
-			break;
-		case NOTIFY_MODEMSTATE_CS:
-			dprintf("NOTIFY_MODEMSTATE_CS ");
-			break;
-		case FLOWCONTROL_SUSPEND_CS:
-			dprintf("FLOWCONTROL_SUSPEND_CS ");
-			break;
-		case FLOWCONTROL_RESUME_CS:
-			dprintf("FLOWCONTROL_RESUME_CS ");
-			break;
-		case SET_LINESTATE_MASK_CS:
-			dprintf("SET_LINESTATE_MASK_CS ");
-			break;
-		case SET_MODEMSTATE_MASK_CS:
-			dprintf("SET_MODEMSTATE_MASK_CS ");
-			break;
-		case PURGE_DATA_CS:
-			dprintf("PURGE_DATA_CS ");
-			break;
-		case SET_BAUDRATE_SC:
-			dprintf("SET_BAUDRATE_SC %d ", ntohl(*(int *)&buf[i + 1]));
-			i += 4;
-			break;
-		case SET_DATASIZE_SC:
-			dprintf("SET_DATASIZE_SC ");
-			break;
-		case SET_PARITY_SC:
-			dprintf("SET_PARITY_SC ");
-			break;
-		case SET_STOPSIZE_SC:
-			dprintf("SET_STOPSIZE_SC ");
-			break;
-		case SET_CONTROL_SC:
-			i++;
-			dprintf("SET_CONTROL_SC 0x%02x ", buf[i]);
-			break;
-		case NOTIFY_LINESTATE_SC:
-			dprintf("NOTIFY_LINESTATE_SC ");
-			break;
-		case NOTIFY_MODEMSTATE_SC:
-			i++;
-			dprintf("NOTIFY_MODEMSTATE_SC 0x%02x ", buf[i]);
-			break;
-		case FLOWCONTROL_SUSPEND_SC:
-			dprintf("FLOWCONTROL_SUSPEND_SC ");
-			break;
-		case FLOWCONTROL_RESUME_SC:
-			dprintf("FLOWCONTROL_RESUME_SC ");
-			break;
-		case SET_LINESTATE_MASK_SC:
-			dprintf("SET_LINESTATE_MASK_SC ");
-			break;
-		case SET_MODEMSTATE_MASK_SC:
-			dprintf("SET_MODEMSTATE_MASK_SC ");
-			break;
-		case PURGE_DATA_SC:
-			dprintf("PURGE_DATA_SC ");
-			break;
-		default:
-			dprintf("%d ", buf[i]);
-			break;
-		}
+	switch (buf[1]) {
+	case SET_BAUDRATE_CS:
+		dbg_printf("SET_BAUDRATE_CS ");
+		break;
+	case SET_DATASIZE_CS:
+		dbg_printf("SET_DATASIZE_CS ");
+		break;
+	case SET_PARITY_CS:
+		dbg_printf("SET_PARITY_CS ");
+		break;
+	case SET_STOPSIZE_CS:
+		dbg_printf("SET_STOPSIZE_CS ");
+		break;
+	case SET_CONTROL_CS:
+		dbg_printf("SET_CONTROL_CS ");
+		break;
+	case NOTIFY_LINESTATE_CS:
+		dbg_printf("NOTIFY_LINESTATE_CS ");
+		break;
+	case NOTIFY_MODEMSTATE_CS:
+		dbg_printf("NOTIFY_MODEMSTATE_CS ");
+		break;
+	case FLOWCONTROL_SUSPEND_CS:
+		dbg_printf("FLOWCONTROL_SUSPEND_CS ");
+		break;
+	case FLOWCONTROL_RESUME_CS:
+		dbg_printf("FLOWCONTROL_RESUME_CS ");
+		break;
+	case SET_LINESTATE_MASK_CS:
+		dbg_printf("SET_LINESTATE_MASK_CS ");
+		break;
+	case SET_MODEMSTATE_MASK_CS:
+		dbg_printf("SET_MODEMSTATE_MASK_CS ");
+		break;
+	case PURGE_DATA_CS:
+		dbg_printf("PURGE_DATA_CS ");
+		break;
+	case SET_BAUDRATE_SC:
+		dbg_printf("SET_BAUDRATE_SC %d ",
+			buf[2] << 24 | buf[3] << 16 | buf[4] << 8 | buf[5]);
+		i += 4;
+		break;
+	case SET_DATASIZE_SC:
+		dbg_printf("SET_DATASIZE_SC ");
+		break;
+	case SET_PARITY_SC:
+		dbg_printf("SET_PARITY_SC ");
+		break;
+	case SET_STOPSIZE_SC:
+		dbg_printf("SET_STOPSIZE_SC ");
+		break;
+	case SET_CONTROL_SC:
 		i++;
+		dbg_printf("SET_CONTROL_SC 0x%02x ", buf[i]);
+		break;
+	case NOTIFY_LINESTATE_SC:
+		dbg_printf("NOTIFY_LINESTATE_SC ");
+		break;
+	case NOTIFY_MODEMSTATE_SC:
+		i++;
+		dbg_printf("NOTIFY_MODEMSTATE_SC 0x%02x ", buf[i]);
+		break;
+	case FLOWCONTROL_SUSPEND_SC:
+		dbg_printf("FLOWCONTROL_SUSPEND_SC ");
+		break;
+	case FLOWCONTROL_RESUME_SC:
+		dbg_printf("FLOWCONTROL_RESUME_SC ");
+		break;
+	case SET_LINESTATE_MASK_SC:
+		dbg_printf("SET_LINESTATE_MASK_SC ");
+		break;
+	case SET_MODEMSTATE_MASK_SC:
+		dbg_printf("SET_MODEMSTATE_MASK_SC ");
+		break;
+	case PURGE_DATA_SC:
+		dbg_printf("PURGE_DATA_SC ");
+		break;
+	default:
+		dbg_printf("??? %d ", buf[i]);
+		break;
 	}
 
-	return len;
+	while (i < len) {
+		if (buf[i] == IAC) {
+			if (i + 1 < len && buf[i+1] == IAC) {
+				/* quoted IAC -> unquote */
+				++i;
+			} else if (i + 1 < len && buf[i+1] == SE) {
+				dbg_printf("IAC SE\n");
+				return i + 2;
+			}
+		}
+		dbg_printf("%d ", buf[i]);
+
+		++i;
+	}
+
+	fprintf(stderr, "Incomplete SB string\n");
+	return -EINVAL;
 }
 
-static int do_subneg(unsigned char *buf, int len)
-{
-	int i = 0;
+struct telnet_option {
+	unsigned char id;
+	const char *name;
+	int (*subneg_handler)(struct ios_ops *ios, unsigned char *buf, int len);
+	bool sent_will;
+};
 
-	while (i < len) {
-		switch (buf[i]) {
-		case COM_PORT_OPTION:
-			dprintf("COM_PORT_OPTION ");
-			return do_com_port_option(&buf[i + 1], len - i) + 1;
-		case IAC:
-			dprintf("IAC ");
-			return len - i;
-		default:
-			dprintf("%d ", buf[i]);
-			break;
-		}
-		i++;
+#define TELNET_OPTION(x)	.id = TELNET_OPTION_ ## x, .name = #x
+
+static const struct telnet_option telnet_options[] = {
+	{
+		TELNET_OPTION(COM_PORT_CONTROL),
+		.subneg_handler = do_com_port_option,
+		.sent_will = true,
+	}, {
+		TELNET_OPTION(BINARY_TRANSMISSION),
+	}, {
+		TELNET_OPTION(ECHO),
+	}, {
+		TELNET_OPTION(SUPPRESS_GO_AHEAD),
+	}
+};
+
+static const struct telnet_option *get_telnet_option(unsigned char id)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(telnet_options); ++i) {
+		if (id == telnet_options[i].id)
+			return &telnet_options[i];
 	}
 
-	return len;
+	return NULL;
 }
 
-static int handle_command(unsigned char *buf, int len)
+
+/* This function is called with buf[-2:-1] being IAC SB */
+static int do_subneg(struct ios_ops *ios, unsigned char *buf, int len)
 {
-	int i = 0;
+	const struct telnet_option *option = get_telnet_option(buf[0]);
 
-	while (i < len) {
-		switch (buf[i]) {
-		case SB:
-			dprintf("SB ");
-			i += do_subneg(&buf[i+1], len - i);
-			break;
-		case IAC:
-			dprintf("IAC ");
-			break;
-		case COM_PORT_OPTION:
-			dprintf("COM_PORT_OPTION ");
-			break;
-		case SE:
-			dprintf("SE ");
-			break;
-		case WILL:
-			dprintf("WILL ");
-			break;
-		case WONT:
-			dprintf("WONT ");
-			break;
-		case DO:
-			dprintf("DO ");
-			break;
-		case DONT:
-			dprintf("DONT ");
-			break;
-		default:
-			dprintf("%d ", buf[i]);
-			break;
+	if (option)
+		dbg_printf("%s ", option->name);
+	if (option->subneg_handler) {
+		return option->subneg_handler(ios, buf, len);
+	} else {
+		/* skip over subneg string */
+		int i;
+		for (i = 0; i < len - 1; ++i) {
+			if (buf[i] != IAC) {
+				dbg_printf("%d ", buf[i]);
+				continue;
+			}
+
+			if (buf[i + 1] == SE) {
+				dbg_printf("IAC SE\n");
+				return i + 1;
+			}
+
+			/* skip over IAC IAC */
+			if (buf[i + 1] == IAC) {
+				dbg_printf("%d \n", IAC);
+				i++;
+			}
 		}
-		i++;
-	}
 
-	dprintf("\n");
-	return len;
+		/* the subneg string isn't finished yet */
+		if (i == len - 1)
+			dbg_printf("%d", buf[i]);
+		dbg_printf("\\\n");
+		fprintf(stderr, "Incomplete SB string\n");
+
+		return -EINVAL;
+	}
 }
 
 static int logfd = -1;
@@ -194,7 +219,89 @@ static void write_receive_buf(const unsigned char *buf, int len)
 		write(logfd, buf, len);
 }
 
-static void handle_receive_buf(struct ios_ops *ios, unsigned char *buf, int len)
+/* This function is called with buf[0] being IAC. */
+static int handle_command(struct ios_ops *ios, unsigned char *buf, int len)
+{
+	int ret;
+	const struct telnet_option *option;
+
+	switch (buf[1]) {
+	case SB:
+		dbg_printf("SB ");
+		ret = do_subneg(ios, &buf[2], len - 2);
+		if (ret < 0)
+			return ret;
+		return ret + 2;
+
+	case IAC:
+		/* escaped IAC -> unescape */
+		write_receive_buf(&buf[1], 1);
+		return 2;
+
+	case WILL:
+		option = get_telnet_option(buf[2]);
+		if (option)
+			dbg_printf("WILL %s", option->name);
+		else
+			dbg_printf("WILL #%d", buf[2]);
+
+		if (option && option->subneg_handler) {
+			/* ok, we already requested that, so take this as
+			 * confirmation to actually do COM_PORT stuff.
+			 * Everything is fine. Don't reconfirm to prevent an
+			 * request/confirm storm.
+			 */
+			dbg_printf("\n");
+		} else {
+			/* unknown/unimplemented option -> DONT */
+			dbg_printf(" -> DONT\n");
+			dprintf(ios->fd, "%c%c%c", IAC, DONT, buf[2]);
+		}
+		return 3;
+
+	case WONT:
+		option = get_telnet_option(buf[2]);
+		if (option)
+			dbg_printf("WONT %s\n", option->name);
+		else
+			dbg_printf("WONT #%d\n", buf[2]);
+		return 3;
+
+	case DO:
+		option = get_telnet_option(buf[2]);
+		if (option)
+			dbg_printf("DO %s", option->name);
+		else
+			dbg_printf("DO #%d", buf[2]);
+
+		if (option && option->sent_will) {
+			/*
+			 * This is a confirmation of an WILL sent by us before.
+			 * There is nothing to do now.
+			 */
+			dbg_printf("\n");
+		} else {
+			/* Oh, cannot handle that one, so send a WONT */
+			dbg_printf(" -> WONT\n");
+			dprintf(ios->fd, "%c%c%c", IAC, WONT, buf[2]);
+		}
+		return 3;
+
+	case DONT:
+		option = get_telnet_option(buf[2]);
+		if (option)
+			dbg_printf("DONT %s\n", option->name);
+		else
+			dbg_printf("DONT #%d\n", buf[2]);
+		return 3;
+
+	default:
+		dbg_printf("??? %d\n", buf[1]);
+		return 1;
+	}
+}
+
+static int handle_receive_buf(struct ios_ops *ios, unsigned char *buf, int len)
 {
 	unsigned char *sendbuf = buf;
 	int i;
@@ -204,7 +311,10 @@ static void handle_receive_buf(struct ios_ops *ios, unsigned char *buf, int len)
 		case IAC:
 			/* BUG: this is telnet specific */
 			write_receive_buf(sendbuf, buf - sendbuf);
-			i = handle_command(buf, len);
+			i = handle_command(ios, buf, len);
+			if (i < 0)
+				return i;
+
 			buf += i;
 			len -= i;
 			sendbuf = buf;
@@ -213,6 +323,8 @@ static void handle_receive_buf(struct ios_ops *ios, unsigned char *buf, int len)
 			write_receive_buf(sendbuf, buf - sendbuf);
 			if (answerback)
 				write(ios->fd, answerback, strlen(answerback));
+			else
+				write_receive_buf(buf, 1);
 
 			buf += 1;
 			len -= 1;
@@ -226,6 +338,7 @@ static void handle_receive_buf(struct ios_ops *ios, unsigned char *buf, int len)
 	}
 
 	write_receive_buf(sendbuf, buf - sendbuf);
+	return 0;
 }
 
 /* handle escape characters, writing to output */
@@ -304,7 +417,9 @@ int mux_loop(struct ios_ops *ios)
 				return 0;
 			}
 
-			handle_receive_buf(ios, buf, len);
+			i = handle_receive_buf(ios, buf, len);
+			if (i < 0)
+				return i;
 		}
 
 		if (!listenonly && FD_ISSET(STDIN_FILENO, &ready)) {
