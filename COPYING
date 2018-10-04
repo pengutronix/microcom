@@ -4,15 +4,6 @@ doesn't affect the previous statement though.) If the file doesn't specify a
 license explicitly, assume "version 2 only". The "GNU GENERAL PUBLIC LICENSE
 version 2" is appended below.
 
-Changes (aka patches) to microcom must be certified to be compatible with this.
-This is done by a signed-off line. If you can certify for your change that the
-"Developer's Certificate of Origin 1.1" (also appended below) applies, add a
-line reading:
-
-	Signed-off-by: Random J Developer <random@developer.example.org>
-
-with your real name and email address at the end of the patch description
-and send it to oss-tools@pengutronix.de.
 --------------------------------------------------------------------------------
 
                     GNU GENERAL PUBLIC LICENSE
@@ -354,29 +345,3 @@ proprietary programs.  If your program is a subroutine library, you may
 consider it more useful to permit linking proprietary applications with the
 library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.
---------------------------------------------------------------------------------
-Developer's Certificate of Origin 1.1
-
-By making a contribution to this project, I certify that:
-
-(a) The contribution was created in whole or in part by me and I
-    have the right to submit it under the open source license
-    indicated in the file; or
-
-(b) The contribution is based upon previous work that, to the best
-    of my knowledge, is covered under an appropriate open source
-    license and I have the right under that license to submit that
-    work with modifications, whether created in whole or in part
-    by me, under the same open source license (unless I am
-    permitted to submit under a different license), as indicated
-    in the file; or
-
-(c) The contribution was provided directly to me by some other
-    person who certified (a), (b) or (c) and I have not modified
-    it.
-
-(d) I understand and agree that this project and the contribution
-    are public and that a record of the contribution (including all
-    personal information I submit with it, including my sign-off) is
-    maintained indefinitely and may be redistributed consistent with
-    this project or the open source license(s) involved.
