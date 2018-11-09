@@ -328,8 +328,6 @@ int main(int argc, char *argv[])
 
 	/* run the main program loop */
 	ret = mux_loop(ios);
-	if (ret)
-		fprintf(stderr, "%s\n", strerror(-ret));
 
 	ios->exit(ios);
 

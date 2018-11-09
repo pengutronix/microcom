@@ -400,6 +400,8 @@ int mux_loop(struct ios_ops *ios)
 	unsigned char buf[BUFSIZE];
 
 	while (1) {
+		int ret;
+
 		FD_ZERO(&ready);
 		if (!listenonly)
 			FD_SET(STDIN_FILENO, &ready);
@@ -410,25 +412,35 @@ int mux_loop(struct ios_ops *ios)
 		if (FD_ISSET(ios->fd, &ready)) {
 			/* pf has characters for us */
 			len = read(ios->fd, buf, BUFSIZE);
-			if (len < 0)
-				return -errno;
+			if (len < 0) {
+				ret = -errno;
+				fprintf(stderr, "%s\n", strerror(-ret));
+				return ret;
+			}
 			if (len == 0) {
 				fprintf(stderr, "Got EOF from port\n");
-				return 0;
+				return -EINVAL;
 			}
 
 			i = handle_receive_buf(ios, buf, len);
-			if (i < 0)
+			if (i < 0) {
+				fprintf(stderr, "%s\n", strerror(-i));
 				return i;
+			}
 		}
 
 		if (!listenonly && FD_ISSET(STDIN_FILENO, &ready)) {
 			/* standard input has characters for us */
 			i = read(STDIN_FILENO, buf, BUFSIZE);
-			if (i < 0)
-				return -errno;
-			if (i == 0)
+			if (i < 0) {
+				ret = -errno;
+				fprintf(stderr, "%s\n", strerror(-ret));
+				return ret;
+			}
+			if (i == 0) {
+				fprintf(stderr, "Got EOF from stdin\n");
 				return -EINVAL;
+			}
 
 			cook_buf(ios, buf, i);
 		}
