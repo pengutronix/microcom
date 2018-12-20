@@ -85,3 +85,5 @@ Signed-off-by: Random J Developer <random@developer.example.org>
 description (Git can do this for you when you use `git commit -s`).
 Then send your patches to <oss-tools@pengutronix.de>, or, if you use GitHub,
 open a pull-request on <https://github.com/pengutronix/microcom>.
+If you send patches, please prefix your subject with "[PATCH microcom]" (for
+example, see the `git-config` manpage for the option `format.subjectPrefix`).
