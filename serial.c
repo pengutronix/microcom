@@ -22,6 +22,7 @@
 
 #include <limits.h>
 #include <sys/ioctl.h>
+#include <errno.h>
 #include <arpa/telnet.h>
 
 #include "microcom.h"
@@ -177,26 +178,28 @@ struct ios_ops * serial_init(char *device)
 		exit(1);
 	}
 
-	fd = open(lockfile, O_RDONLY);
-	if (fd >= 0 && !opt_force) {
-		close(fd);
-		main_usage(3, "lockfile for port exists", device);
-	}
+relock:
+	fd = open(lockfile, O_RDWR | O_CREAT | O_EXCL, 0444);
+	if (fd < 0) {
+		if (errno == EEXIST) {
+			if (opt_force) {
+				printf("lockfile for port exists, ignoring\n");
+				serial_unlock();
+				goto relock;
+			}
 
-	if (fd >= 0 && opt_force) {
-		close(fd);
-		printf("lockfile for port exists, ignoring\n");
-		serial_unlock();
-	}
+			main_usage(3, "lockfile for port exists", device);
+		}
 
-	fd = open(lockfile, O_RDWR | O_CREAT, 0444);
-	if (fd < 0 && opt_force) {
-		printf("cannot create lockfile. ignoring\n");
-		lockfile = NULL;
-		goto force;
-	}
-	if (fd < 0)
+		if (opt_force) {
+			printf("cannot create lockfile. ignoring\n");
+			lockfile = NULL;
+			goto force;
+		}
+
 		main_usage(3, "cannot create lockfile", device);
+	}
+
 	/* Kermit wants binary pid */
 	pid = getpid();
 	write(fd, &pid, sizeof(long));
