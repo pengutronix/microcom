@@ -200,9 +200,8 @@ relock:
 		main_usage(3, "cannot create lockfile", device);
 	}
 
-	/* Kermit wants binary pid */
 	pid = getpid();
-	write(fd, &pid, sizeof(long));
+	dprintf(fd, "%10ld\n", (long)pid);
 	close(fd);
 force:
 	/* open the device */
