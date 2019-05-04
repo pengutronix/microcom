@@ -96,6 +96,7 @@ struct ios_ops *telnet_init(char *hostport)
 	ios->set_flow = telnet_set_flow;
 	ios->send_break = telnet_send_break;
 	ios->exit = telnet_exit;
+	ios->istelnet = true;
 
 	memset(&hints, '\0', sizeof(hints));
 	hints.ai_flags = AI_ADDRCONFIG;

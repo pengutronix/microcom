@@ -158,6 +158,7 @@ struct ios_ops *can_init(char *interface_id)
 	ios->set_flow = can_set_flow;
 	ios->send_break = can_send_break;
 	ios->exit = can_exit;
+	ios->istelnet = false;
 
 	/*
 	 * the string is supposed to be formated this way:
