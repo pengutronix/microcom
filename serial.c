@@ -182,10 +182,32 @@ relock:
 	fd = open(lockfile, O_RDWR | O_CREAT | O_EXCL, 0444);
 	if (fd < 0) {
 		if (errno == EEXIST) {
+			char pidbuf[12];
+			ssize_t nbytes = 0;
 			if (opt_force) {
 				printf("lockfile for port exists, ignoring\n");
 				serial_unlock();
 				goto relock;
+			}
+
+			fd = open(lockfile, O_RDONLY);
+			if (fd < 0)
+				main_usage(3, "lockfile for port can't be opened", device);
+
+			do {
+				ret = read(fd, &pidbuf[nbytes], sizeof(pidbuf) - nbytes - 1);
+				nbytes += ret;
+			} while (ret > 0 && nbytes < sizeof (pidbuf) - 1);
+
+			if (ret >= 0) {
+				pidbuf[nbytes] = '\0';
+				ret = sscanf(pidbuf, "%10ld\n", &pid);
+
+				if (ret == 1 && kill(pid, 0) < 0 && errno == ESRCH) {
+					printf("lockfile contains stale pid, ignoring\n");
+					serial_unlock();
+					goto relock;
+				}
 			}
 
 			main_usage(3, "lockfile for port exists", device);
