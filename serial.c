@@ -48,6 +48,16 @@ static void init_comm(struct termios *pts)
 	pts->c_iflag &= ~ICRNL;
 }
 
+static ssize_t serial_write(struct ios_ops *ios, const void *buf, size_t count)
+{
+	return write(ios->fd, buf, count);
+}
+
+static ssize_t serial_read(struct ios_ops *ios, void *buf, size_t count)
+{
+	return read(ios->fd, buf, count);
+}
+
 static int serial_set_handshake_line(struct ios_ops *ios, int pin, int enable)
 {
 	int flag;
@@ -158,6 +168,8 @@ struct ios_ops * serial_init(char *device)
 	if (!lockfile)
 		return NULL;
 
+	ops->write = serial_write;
+	ops->read = serial_read;
 	ops->set_speed = serial_set_speed;
 	ops->set_flow = serial_set_flow;
 	ops->set_handshake_line = serial_set_handshake_line;

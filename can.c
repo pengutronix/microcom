@@ -49,6 +49,16 @@ struct can_data {
 static struct can_data data;
 static pthread_t can_thread;
 
+static ssize_t can_write(struct ios_ops *ios, const void *buf, size_t count)
+{
+	return write(ios->fd, buf, count);
+}
+
+static ssize_t can_read(struct ios_ops *ios, void *buf, size_t count)
+{
+	return read(ios->fd, buf, count);
+}
+
 static int can_set_speed(struct ios_ops *ios, unsigned long speed)
 {
 	return 0;
@@ -154,6 +164,8 @@ struct ios_ops *can_init(char *interface_id)
 	if (!ios)
 		return NULL;
 
+	ios->write = can_write;
+	ios->read = can_read;
 	ios->set_speed = can_set_speed;
 	ios->set_flow = can_set_flow;
 	ios->send_break = can_send_break;
