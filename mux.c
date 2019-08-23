@@ -378,7 +378,7 @@ int logfile_open(const char *path)
 {
 	int fd;
 
-	fd = open(path, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+	fd = open(path, O_CREAT | O_TRUNC | O_WRONLY | O_CLOEXEC, 0644);
 	if (fd < 0) {
 		fprintf(stderr, "Cannot open logfile '%s': %s\n", path, strerror(errno));
 		return fd;

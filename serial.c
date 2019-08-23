@@ -179,7 +179,7 @@ struct ios_ops * serial_init(char *device)
 	}
 
 relock:
-	fd = open(lockfile, O_RDWR | O_CREAT | O_EXCL, 0444);
+	fd = open(lockfile, O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC, 0444);
 	if (fd < 0) {
 		if (errno == EEXIST) {
 			char pidbuf[12];
@@ -227,7 +227,7 @@ relock:
 	close(fd);
 force:
 	/* open the device */
-	fd = open(device, O_RDWR | O_NONBLOCK);
+	fd = open(device, O_RDWR | O_NONBLOCK | O_CLOEXEC);
 	ops->fd = fd;
 
 	if (fd < 0) {

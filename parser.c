@@ -189,7 +189,7 @@ int do_commandline(void)
 
 int do_script(char *script)
 {
-	int fd = open(script, O_RDONLY);
+	int fd = open(script, O_RDONLY | O_CLOEXEC);
 	int stdin = dup(1);
 	int ret;
 
