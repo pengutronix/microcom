@@ -21,6 +21,7 @@
 #include <arpa/telnet.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
+#include <fcntl.h>
 
 #define BUFSIZE 1024
 
@@ -366,7 +367,7 @@ static void cook_buf(struct ios_ops *ios, unsigned char *buf, int num)
 	}			/* while - end of processing all the charactes in the buffer */
 }
 
-void logfile_close(void)
+void log_close(void)
 {
 	if (logfd >= 0)
 		close(logfd);
@@ -374,7 +375,54 @@ void logfile_close(void)
 	logfd = -1;
 }
 
-int logfile_open(const char *path)
+static int logproc_open(const char *path, char *argv[])
+{
+	int pipefd[2];
+	int ret;
+
+	ret = pipe(pipefd);
+	if (ret) {
+		fprintf(stderr, "Cannot open log pipe: %s\n", strerror(errno));
+		return -1;
+	}
+
+	ret = fcntl(pipefd[0], F_SETFD, FD_CLOEXEC);
+	if (!ret)
+		ret = fcntl(pipefd[1], F_SETFD, FD_CLOEXEC);
+	if (ret) {
+		fprintf(stderr, "Cannot set FD_CLOEXEC on log pipe: %s\n",
+			strerror(errno));
+		return -1;
+	}
+
+	/* flush now, so we don't clone unflushed output buffers */
+	fflush(NULL);
+
+	ret = fork();
+	if (ret == 0) {
+		close(0);
+		close(1);
+		dup(pipefd[0]);
+
+		execvp(path, argv);
+		fprintf(stderr, "Cannot exec log process (%s): %s\n",
+			path, strerror(errno));
+		_Exit(1);
+	} else {
+		close(pipefd[0]);
+
+		if (ret < 0) {
+			close(pipefd[1]);
+			fprintf(stderr, "Cannot fork log process: %s\n",
+				strerror(errno));
+			return -1;
+		}
+	}
+
+	return pipefd[1];
+}
+
+static int logfile_open(const char *path)
 {
 	int fd;
 
@@ -385,7 +433,28 @@ int logfile_open(const char *path)
 	}
 
 	if (logfd >= 0)
-		logfile_close();
+		log_close();
+
+	logfd = fd;
+
+	return 0;
+}
+
+int log_open(char *argv[])
+{
+	const char *path = argv[0];
+	int fd;
+
+	if (*path == '|')
+		fd = logproc_open(++path, argv);
+	else
+		fd = logfile_open(path);
+
+	if (fd < 0)
+		return fd;
+
+	if (logfd >= 0)
+		log_close();
 
 	logfd = fd;
 

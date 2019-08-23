@@ -82,8 +82,12 @@ struct cmd {
 	char *help;
 };
 
-int logfile_open(const char *path);
-void logfile_close(void);
+#define MAXARGS 64
+
+int parse_line(char *_line, int *argc, char *argv[]);
+
+int log_open(char *argv[]);
+void log_close(void);
 
 int register_command(struct cmd *cmd);
 #define MICROCOM_CMD_START 100

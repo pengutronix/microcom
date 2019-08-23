@@ -11,9 +11,7 @@
 #include <readline/history.h>
 #include "microcom.h"
 
-#define MAXARGS 64
-
-static int parse_line(char *_line, int *argc, char *argv[])
+int parse_line(char *_line, int *argc, char *argv[])
 {
 	char *line = _line;
 	int nargs = 0;
@@ -64,7 +62,8 @@ static int parse_line(char *_line, int *argc, char *argv[])
         printf("Too many args (max. %d)\n", MAXARGS);
 out:
 	argv[nargs] = NULL;
-	*argc = nargs;
+	if (argc)
+		*argc = nargs;
 
 	return line - _line + 1;
 }

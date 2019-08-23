@@ -184,7 +184,7 @@ static int cmd_log(int argc, char *argv[])
 	if (argc < 2)
 		return MICROCOM_CMD_USAGE;
 
-	ret = logfile_open(argv[1]);
+	ret = log_open(argv);
 
 	return ret;
 }
@@ -239,7 +239,7 @@ static struct cmd cmds[] = {
 	}, {
 		.name = "log",
 		.fn = cmd_log,
-		.info = "log to file",
+		.info = "log to file or |executable",
 		.help = "log <logfile>",
 	}, {
 		.name = "#",
