@@ -34,7 +34,7 @@ static void init_comm(struct termios *pts)
 	/* some things we want to set arbitrarily */
 	pts->c_lflag &= ~ICANON;
 	pts->c_lflag &= ~(ECHO | ECHOCTL | ECHONL);
-	pts->c_cflag |= HUPCL;
+	pts->c_cflag |= HUPCL | CREAD | CLOCAL;
 	pts->c_iflag |= IGNBRK;
 	pts->c_cc[VMIN] = 1;
 	pts->c_cc[VTIME] = 0;
