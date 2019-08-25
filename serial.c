@@ -225,7 +225,6 @@ static void serial_exit(struct ios_ops *ios)
 {
 	tcsetattr(ios->fd, TCSANOW, &pots);
 	close(ios->fd);
-	free(ios);
 }
 
 struct ios_ops * serial_init(char *device)

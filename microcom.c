@@ -72,7 +72,8 @@ void microcom_exit(int signal)
 	ios->exit(ios);
 	tcsetattr(STDIN_FILENO, TCSANOW, &sots);
 
-	exit(0);
+	if (signal)
+		exit(0);
 }
 
 /********************************************************************
