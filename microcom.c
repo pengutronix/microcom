@@ -122,7 +122,7 @@ char escape_char = DEFAULT_ESCAPE_CHAR;
 
 int main(int argc, char *argv[])
 {
-	struct sigaction sact;  /* used to initialize the signal handler */
+	struct sigaction sact = {0};  /* used to initialize the signal handler */
 	int opt, ret;
 	char *hostport = NULL;
 	int telnet = 0, can = 0;
