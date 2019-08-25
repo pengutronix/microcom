@@ -38,6 +38,8 @@
 #define DEFAULT_CAN_ID (0x200)
 
 struct ios_ops {
+	ssize_t (*write)(struct ios_ops *, const void *buf, size_t count);
+	ssize_t (*read)(struct ios_ops *, void *buf, size_t count);
 	int (*set_speed)(struct ios_ops *, unsigned long speed);
 #define FLOW_NONE	0
 #define FLOW_SOFT	1

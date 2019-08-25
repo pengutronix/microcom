@@ -26,6 +26,16 @@
 
 #include "microcom.h"
 
+static ssize_t telnet_write(struct ios_ops *ios, const void *buf, size_t count)
+{
+	return write(ios->fd, buf, count);
+}
+
+static ssize_t telnet_read(struct ios_ops *ios, void *buf, size_t count)
+{
+	return read(ios->fd, buf, count);
+}
+
 static int telnet_set_speed(struct ios_ops *ios, unsigned long speed)
 {
 
@@ -92,6 +102,8 @@ struct ios_ops *telnet_init(char *hostport)
 	if (!ios)
 		return NULL;
 
+	ios->write = telnet_write;
+	ios->read = telnet_read;
 	ios->set_speed = telnet_set_speed;
 	ios->set_flow = telnet_set_flow;
 	ios->send_break = telnet_send_break;

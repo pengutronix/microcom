@@ -20,6 +20,7 @@
 #include "microcom.h"
 #include <arpa/telnet.h>
 #include <arpa/inet.h>
+#include <stdarg.h>
 #include <stdbool.h>
 
 #define BUFSIZE 1024
@@ -219,6 +220,37 @@ static void write_receive_buf(const unsigned char *buf, int len)
 		write(logfd, buf, len);
 }
 
+static int ios_printf(struct ios_ops *ios, const char *format, ...)
+{
+	char buf[20];
+	int size, written = 0;
+	ssize_t ret;
+	va_list args;
+
+	va_start(args, format);
+
+	size = vsnprintf(buf, sizeof(buf), format, args);
+
+	va_end(args);
+
+	if (size >= sizeof(buf)) {
+		/* truncated output */
+		errno = EIO;
+		return -1;
+	}
+
+	while (written < size) {
+		ret = ios->write(ios, buf + written, size - written);
+		if (ret < 0)
+			return ret;
+
+		written += ret;
+		assert(written <= size);
+	}
+
+	return written;
+}
+
 /* This function is called with buf[0] being IAC. */
 static int handle_command(struct ios_ops *ios, unsigned char *buf, int len)
 {
@@ -255,7 +287,7 @@ static int handle_command(struct ios_ops *ios, unsigned char *buf, int len)
 		} else {
 			/* unknown/unimplemented option -> DONT */
 			dbg_printf(" -> DONT\n");
-			dprintf(ios->fd, "%c%c%c", IAC, DONT, buf[2]);
+			ios_printf(ios, "%c%c%c", IAC, DONT, buf[2]);
 		}
 		return 3;
 
@@ -283,7 +315,7 @@ static int handle_command(struct ios_ops *ios, unsigned char *buf, int len)
 		} else {
 			/* Oh, cannot handle that one, so send a WONT */
 			dbg_printf(" -> WONT\n");
-			dprintf(ios->fd, "%c%c%c", IAC, WONT, buf[2]);
+			ios_printf(ios, "%c%c%c", IAC, WONT, buf[2]);
 		}
 		return 3;
 
@@ -322,7 +354,7 @@ static int handle_receive_buf(struct ios_ops *ios, unsigned char *buf, int len)
 		case 5:
 			write_receive_buf(sendbuf, buf - sendbuf);
 			if (answerback)
-				write(ios->fd, answerback, strlen(answerback));
+				ios->write(ios, answerback, strlen(answerback));
 			else
 				write_receive_buf(buf, 1);
 
@@ -353,7 +385,7 @@ static void cook_buf(struct ios_ops *ios, unsigned char *buf, int num)
 			current++;
 		/* and write the sequence before esc char to the comm port */
 		if (current)
-			write(ios->fd, buf, current);
+			ios->write(ios, buf, current);
 
 		if (current < num) {	/* process an escape sequence */
 			/* found an escape character */
@@ -411,7 +443,7 @@ int mux_loop(struct ios_ops *ios)
 
 		if (FD_ISSET(ios->fd, &ready)) {
 			/* pf has characters for us */
-			len = read(ios->fd, buf, BUFSIZE);
+			len = ios->read(ios, buf, BUFSIZE);
 			if (len < 0) {
 				ret = -errno;
 				fprintf(stderr, "%s\n", strerror(-ret));
