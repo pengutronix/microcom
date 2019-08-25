@@ -76,7 +76,6 @@ static int telnet_send_break(struct ios_ops *ios)
 static void telnet_exit(struct ios_ops *ios)
 {
 	close(ios->fd);
-	free(ios);
 }
 
 struct ios_ops *telnet_init(char *hostport)

@@ -69,7 +69,6 @@ static void can_exit(struct ios_ops *ios)
 	shutdown(ios->fd, SHUT_RDWR);
 	close(ios->fd);
 	pthread_join(can_thread, NULL);
-	free(ios);
 }
 
 static void *can_thread_fun(void *_data)
