@@ -26,6 +26,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <signal.h>
 #include <string.h>
 #include <termios.h>
@@ -50,6 +51,7 @@ struct ios_ops {
 	int (*set_handshake_line)(struct ios_ops *, int pin, int enable);
 	int (*send_break)(struct ios_ops *);
 	void (*exit)(struct ios_ops *);
+	bool istelnet;
 	int fd;
 };
 

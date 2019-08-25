@@ -175,6 +175,7 @@ struct ios_ops * serial_init(char *device)
 	ops->set_handshake_line = serial_set_handshake_line;
 	ops->send_break = serial_send_break;
 	ops->exit = serial_exit;
+	ops->istelnet = false;
 
 	/* check lockfile */
 	substring = strrchr(device, '/');
