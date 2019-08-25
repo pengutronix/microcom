@@ -22,6 +22,7 @@
 
 #include <limits.h>
 #include <sys/ioctl.h>
+#include <errno.h>
 #include <arpa/telnet.h>
 
 #include "microcom.h"
@@ -177,33 +178,56 @@ struct ios_ops * serial_init(char *device)
 		exit(1);
 	}
 
-	fd = open(lockfile, O_RDONLY);
-	if (fd >= 0 && !opt_force) {
-		close(fd);
-		main_usage(3, "lockfile for port exists", device);
-	}
+relock:
+	fd = open(lockfile, O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC, 0444);
+	if (fd < 0) {
+		if (errno == EEXIST) {
+			char pidbuf[12];
+			ssize_t nbytes = 0;
+			if (opt_force) {
+				printf("lockfile for port exists, ignoring\n");
+				serial_unlock();
+				goto relock;
+			}
 
-	if (fd >= 0 && opt_force) {
-		close(fd);
-		printf("lockfile for port exists, ignoring\n");
-		serial_unlock();
-	}
+			fd = open(lockfile, O_RDONLY);
+			if (fd < 0)
+				main_usage(3, "lockfile for port can't be opened", device);
 
-	fd = open(lockfile, O_RDWR | O_CREAT, 0444);
-	if (fd < 0 && opt_force) {
-		printf("cannot create lockfile. ignoring\n");
-		lockfile = NULL;
-		goto force;
-	}
-	if (fd < 0)
+			do {
+				ret = read(fd, &pidbuf[nbytes], sizeof(pidbuf) - nbytes - 1);
+				nbytes += ret;
+			} while (ret > 0 && nbytes < sizeof (pidbuf) - 1);
+
+			if (ret >= 0) {
+				pidbuf[nbytes] = '\0';
+				ret = sscanf(pidbuf, "%10ld\n", &pid);
+
+				if (ret == 1 && kill(pid, 0) < 0 && errno == ESRCH) {
+					printf("lockfile contains stale pid, ignoring\n");
+					serial_unlock();
+					goto relock;
+				}
+			}
+
+			main_usage(3, "lockfile for port exists", device);
+		}
+
+		if (opt_force) {
+			printf("cannot create lockfile. ignoring\n");
+			lockfile = NULL;
+			goto force;
+		}
+
 		main_usage(3, "cannot create lockfile", device);
-	/* Kermit wants binary pid */
+	}
+
 	pid = getpid();
-	write(fd, &pid, sizeof(long));
+	dprintf(fd, "%10ld\n", (long)pid);
 	close(fd);
 force:
 	/* open the device */
-	fd = open(device, O_RDWR | O_NONBLOCK);
+	fd = open(device, O_RDWR | O_NONBLOCK | O_CLOEXEC);
 	ops->fd = fd;
 
 	if (fd < 0) {

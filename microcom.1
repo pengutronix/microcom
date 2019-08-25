@@ -14,6 +14,8 @@ microcom \- A minimalistic terminal program
 .IR host : port ]
 .RB [\| \-s
 .IR speed \|]
+.RB [ -l
+.IR logfile ]
 .br
 .B microcom -c
 .IB interface : rx_id : tx_id
@@ -64,6 +66,11 @@ work in telnet (rfc2217) mode.
 .TP
 .BI \-c\  interface\fB:\fIrx_id\fB:\fItx_id\fR,\ \fI \-\-can= interface\fB:\fIrx_id\fB:\fItx_id
 work in CAN mode (default: \fBcan0:200:200\fR)
+.TP
+.BI \-l\  logfile \fR,\ \fB\-\-log= logfile
+log output to \fIlogfile\fR. If \fIlogfile\fR starts with a pipe `\fB|\fR' character,
+it's instead piped to an executable with that name in \fBPATH\fR. The executable receives
+the microcom output over \fBstdin\fR with \fBstdout\fR closed and \fBstderr\fR connected to microcom's \fBstderr\fR.
 .TP
 .BR -h ", " \-\-help
 Show help.

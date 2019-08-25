@@ -182,7 +182,7 @@ void main_usage(int exitcode, char *str, char *dev)
 		"                                         default: (%s:%x:%x)\n"
 		"    -f, --force                          ignore existing lock file\n"
 		"    -d, --debug                          output debugging info\n"
-		"    -l, --logfile=<logfile>              log output to <logfile>\n"
+		"    -l, --logfile=<logfile>              log output to <logfile> or <|executable>\n"
 		"    -o, --listenonly                     Do not modify local terminal, do not send input\n"
 		"                                         from stdin\n"
 		"    -a,  --answerback=<str>              specify the answerback string sent as response to\n"
@@ -297,7 +297,12 @@ int main(int argc, char *argv[])
 		exit(1);
 
 	if (logfile) {
-		ret = logfile_open(logfile);
+		char *args[MAXARGS + 1];
+		ret = parse_line(logfile, NULL, args);
+		if (ret < 0)
+			exit(1);
+
+		ret = log_open(args);
 		if (ret < 0)
 			exit(1);
 	}
@@ -324,6 +329,8 @@ int main(int argc, char *argv[])
 		sigaction(SIGPIPE, &sact, NULL);
 		sigaction(SIGTERM, &sact, NULL);
 		sigaction(SIGQUIT, &sact, NULL);
+		sact.sa_handler = SIG_IGN;
+		sigaction(SIGCHLD, &sact, NULL);
 	}
 
 	/* run the main program loop */

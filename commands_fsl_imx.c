@@ -384,7 +384,7 @@ static int upload_file(uint32_t address, char *name, unsigned char type)
 	};
 	struct stat stat;
 
-	upfd = open(name, O_RDONLY);
+	upfd = open(name, O_RDONLY | O_CLOEXEC);
 	if (upfd < 0) {
 		perror("open");
 		return 1;
