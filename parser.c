@@ -190,7 +190,7 @@ int do_commandline(void)
 int do_script(char *script)
 {
 	int fd = open(script, O_RDONLY);
-	int stdin = dup(1);
+	int stdinfd = dup(1);
 	int ret;
 
 	if (fd < 0) {
@@ -200,7 +200,7 @@ int do_script(char *script)
 
 	dup2(fd, 0);
 	ret = __do_commandline(NULL);
-	dup2(stdin, 0);
+	dup2(stdinfd, 0);
 
 	return ret;
 }
