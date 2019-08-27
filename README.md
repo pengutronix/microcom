@@ -22,10 +22,10 @@ directy and do:
 autoreconf -i
 ```
 
-If you extracted minicom from a release tarball, this previous step should not
+If you extracted microcom from a release tarball, this previous step should not
 be needed.
 
-Now continue with building and installing minicom:
+Now continue with building and installing microcom:
 
 ```
 ./configure
@@ -33,7 +33,7 @@ make
 sudo make install
 ```
 
-By default, minicom is installed into `/usr/local/bin/`. Use `./configure
+By default, microcom is installed into `/usr/local/bin/`. Use `./configure
 --prefix=YOURPATH` to change that, and see `./configure --help` for more
 options related to building and installation.
 
