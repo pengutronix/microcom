@@ -60,10 +60,10 @@ retry:
 		if (err < 0)
 			return err;
 
-		assert(err < count);
-		buf += err;
-		count -= err;
-		ret += err;
+		assert(err == sizeof(to_can));
+		buf += loopcount;
+		count -= loopcount;
+		ret += loopcount;
 	}
 
 	return ret;
