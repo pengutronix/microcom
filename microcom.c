@@ -302,10 +302,11 @@ int main(int argc, char *argv[])
 			exit(1);
 	}
 
-	current_flow = FLOW_NONE;
-	if (ios->set_speed(ios, current_speed))
-		exit(EXIT_FAILURE);
+	ret = ios->set_speed(ios, current_speed);
+	if (ret)
+		goto cleanup_ios;
 
+	current_flow = FLOW_NONE;
 	ios->set_flow(ios, current_flow);
 
 	if (!listenonly) {
@@ -329,10 +330,11 @@ int main(int argc, char *argv[])
 	/* run the main program loop */
 	ret = mux_loop(ios);
 
-	ios->exit(ios);
-
 	if (!listenonly)
 		tcsetattr(STDIN_FILENO, TCSANOW, &sots);
+
+cleanup_ios:
+	ios->exit(ios);
 
 	exit(ret ? 1 : 0);
 }
