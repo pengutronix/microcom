@@ -211,18 +211,18 @@ int main(int argc, char *argv[])
 	char *logfile = NULL;
 
 	struct option long_options[] = {
-		{ "help", no_argument, 0, 'h' },
-		{ "port", required_argument, 0, 'p'},
-		{ "speed", required_argument, 0, 's'},
-		{ "telnet", required_argument, 0, 't'},
-		{ "can", required_argument, 0, 'c'},
-		{ "debug", no_argument, 0, 'd' },
-		{ "force", no_argument, 0, 'f' },
-		{ "logfile", required_argument, 0, 'l'},
-		{ "listenonly", no_argument, 0, 'o'},
-		{ "answerback", required_argument, 0, 'a'},
-		{ "version", no_argument, 0, 'v' },
-		{ 0, 0, 0, 0},
+		{ "help", no_argument, NULL, 'h' },
+		{ "port", required_argument, NULL, 'p'},
+		{ "speed", required_argument, NULL, 's'},
+		{ "telnet", required_argument, NULL, 't'},
+		{ "can", required_argument, NULL, 'c'},
+		{ "debug", no_argument, NULL, 'd' },
+		{ "force", no_argument, NULL, 'f' },
+		{ "logfile", required_argument, NULL, 'l'},
+		{ "listenonly", no_argument, NULL, 'o'},
+		{ "answerback", required_argument, NULL, 'a'},
+		{ "version", no_argument, NULL, 'v' },
+		{ },
 	};
 
 	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dfl:oi:a:v", long_options, NULL)) != -1) {
@@ -302,10 +302,11 @@ int main(int argc, char *argv[])
 			exit(1);
 	}
 
-	current_flow = FLOW_NONE;
-	if (ios->set_speed(ios, current_speed))
-		exit(EXIT_FAILURE);
+	ret = ios->set_speed(ios, current_speed);
+	if (ret)
+		goto cleanup_ios;
 
+	current_flow = FLOW_NONE;
 	ios->set_flow(ios, current_flow);
 
 	if (!listenonly) {
@@ -329,10 +330,11 @@ int main(int argc, char *argv[])
 	/* run the main program loop */
 	ret = mux_loop(ios);
 
-	ios->exit(ios);
-
 	if (!listenonly)
 		tcsetattr(STDIN_FILENO, TCSANOW, &sots);
+
+cleanup_ios:
+	ios->exit(ios);
 
 	exit(ret ? 1 : 0);
 }
