@@ -23,8 +23,6 @@
 #include <stdarg.h>
 #include <stdbool.h>
 
-#define BUFSIZE 1024
-
 /* This is called with buf[-2:0] being IAC SB COM_PORT_OPTION */
 static int do_com_port_option(struct ios_ops *ios, unsigned char *buf, int len)
 {

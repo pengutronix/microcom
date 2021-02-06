@@ -55,6 +55,8 @@ struct ios_ops {
 	int fd;
 };
 
+#define BUFSIZE 1024
+
 int mux_loop(struct ios_ops *); /* mux.c */
 void init_terminal(void);
 void restore_terminal(void);
