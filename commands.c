@@ -234,7 +234,7 @@ static struct cmd cmds[] = {
 	}, {
 		.name = "x",
 		.fn = cmd_execute,
-		.info = "execute a script",
+		.info = "execute a script containing microcom commands",
 		.help = "x <scriptfile>",
 	}, {
 		.name = "log",
