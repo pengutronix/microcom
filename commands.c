@@ -145,6 +145,38 @@ static int cmd_break(int argc, char *argv[])
 	return MICROCOM_CMD_START;
 }
 
+static int cmd_paste(int argc, char *argv[])
+{
+	int fd = -1;
+	int i = 1;
+	int ret;
+	unsigned char buf[BUFSIZE];
+
+	if (argc < 2)
+		return MICROCOM_CMD_USAGE;
+
+	fd = open(argv[1], O_RDONLY);
+	if (fd == -1) {
+		ret = errno;
+		fprintf(stderr, "unable to open '%s': %s\n", argv[1], strerror(ret));
+		return -ret;
+	}
+
+	while (i > 0) {
+		i = read(fd, buf, BUFSIZE);
+		if (i < 0) {
+			ret = errno;
+			fprintf(stderr, "%s\n", strerror(ret));
+			return -ret;
+		}
+
+		ios->write(ios, buf, i);
+	}
+
+	close(fd);
+	return MICROCOM_CMD_START;
+}
+
 static int cmd_quit(int argc, char *argv[])
 {
 	microcom_exit(0);
@@ -224,6 +256,11 @@ static struct cmd cmds[] = {
 		.fn = cmd_break,
 		.info = "send break",
 	}, {
+		.name = "paste",
+		.fn = cmd_paste,
+		.info = "write contents of file to the terminal",
+		.help = "paste <file>",
+	}, {
 		.name = "quit",
 		.fn = cmd_quit,
 		.info = "quit microcom",
@@ -234,7 +271,7 @@ static struct cmd cmds[] = {
 	}, {
 		.name = "x",
 		.fn = cmd_execute,
-		.info = "execute a script",
+		.info = "execute a script containing microcom commands",
 		.help = "x <scriptfile>",
 	}, {
 		.name = "log",
