@@ -21,13 +21,13 @@
 ****************************************************************************/
 
 #include <limits.h>
+#include <sys/file.h>
 #include <sys/ioctl.h>
 #include <arpa/telnet.h>
 
 #include "microcom.h"
 
 static struct termios pots;		/* old port termios settings to restore */
-static char *lockfile;
 
 static void init_comm(struct termios *pts)
 {
@@ -134,38 +134,22 @@ static int serial_send_break(struct ios_ops *ios)
 	return 0;
 }
 
-/* unlink the lockfile */
-static void serial_unlock()
-{
-	if (lockfile)
-		unlink(lockfile);
-}
-
 /* restore original terminal settings on exit */
 static void serial_exit(struct ios_ops *ios)
 {
 	tcsetattr(ios->fd, TCSANOW, &pots);
 	close(ios->fd);
 	free(ios);
-	serial_unlock();
 }
-
-#define BUFLEN 512
 
 struct ios_ops * serial_init(char *device)
 {
 	struct termios pts;	/* termios settings on port */
 	struct ios_ops *ops;
-	int fd;
-	char *substring;
-	long pid;
-	int ret;
+	int fd, ret;
 
 	ops = malloc(sizeof(*ops));
 	if (!ops)
-		return NULL;
-	lockfile = malloc(BUFLEN);
-	if (!lockfile)
 		return NULL;
 
 	ops->write = serial_write;
@@ -177,51 +161,20 @@ struct ios_ops * serial_init(char *device)
 	ops->exit = serial_exit;
 	ops->istelnet = false;
 
-	/* check lockfile */
-	substring = strrchr(device, '/');
-	if (substring)
-		substring++;
-	else
-		substring = device;
-
-	ret = snprintf(lockfile, BUFLEN, "/var/lock/LCK..%s", substring);
-	if (ret >= BUFLEN) {
-		printf("path to lockfile too long\n");
-		exit(1);
-	}
-
-	fd = open(lockfile, O_RDONLY);
-	if (fd >= 0 && !opt_force) {
-		close(fd);
-		main_usage(3, "lockfile for port exists", device);
-	}
-
-	if (fd >= 0 && opt_force) {
-		close(fd);
-		printf("lockfile for port exists, ignoring\n");
-		serial_unlock();
-	}
-
-	fd = open(lockfile, O_RDWR | O_CREAT, 0444);
-	if (fd < 0 && opt_force) {
-		printf("cannot create lockfile. ignoring\n");
-		lockfile = NULL;
-		goto force;
-	}
-	if (fd < 0)
-		main_usage(3, "cannot create lockfile", device);
-	/* Kermit wants binary pid */
-	pid = getpid();
-	write(fd, &pid, sizeof(long));
-	close(fd);
-force:
 	/* open the device */
 	fd = open(device, O_RDWR | O_NONBLOCK);
 	ops->fd = fd;
 
-	if (fd < 0) {
-		serial_unlock();
+	if (fd < 0)
 		main_usage(2, "cannot open device", device);
+
+	/* try to lock the device */
+	ret = flock(fd, LOCK_EX | LOCK_NB);
+	if (ret) {
+		if (!opt_force)
+			main_usage(3, "could not lock port", device);
+		else
+			printf("could not lock port, ignoring\n");
 	}
 
 	/* modify the port configuration */
