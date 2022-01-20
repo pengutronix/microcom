@@ -176,14 +176,64 @@ static int serial_lock(char *device)
 	}
 
 	fd = open(lockfile, O_RDONLY);
-	if (fd >= 0 && !opt_force) {
-		close(fd);
-		main_usage(3, "lockfile for port exists", device);
-	}
+	if (fd >= 0) {
+		/*
+		 * The lockfile contains a pid. If this pid doesn't exist the
+		 * lockfile is a leftover of a died process and can be ignored.
+		 *
+		 * There are two different common formats:
+		 * "%10d\n" or the plain pid as a native long.
+		 */
+		struct stat s;
+		int len;
 
-	if (fd >= 0 && opt_force) {
+		ret = fstat(fd, &s);
+		if (ret < 0) {
+			ret = errno;
+			printf("failed to fstat lockfile: %m\n");
+			return ret;
+		}
+
+		if (s.st_size == sizeof(long)) {
+			ret = read(fd, &pid, sizeof(long));
+			if (ret >= 0 && ret != sizeof(long)) {
+				ret = -1;
+				errno = -EINVAL;
+			}
+
+			if (ret < 0) {
+				printf("failed to read lockfile: %m\n");
+				return -errno;
+			}
+		} else if (s.st_size == 11) {
+			char buf[11];
+			ret = read(fd, buf, sizeof(buf));
+			if (ret >= 0 && ret != sizeof(buf)) {
+				ret = -1;
+				errno = -EINVAL;
+			}
+
+			if (ret < 0) {
+				printf("failed to read lockfile: %m\n");
+				return ret;
+			}
+
+			ret = sscanf(buf, "%ld%n", &pid, &len);
+			if (ret != 1 || len != 10 || buf[10] != '\n') {
+				printf("failed to parse lockfile\n");
+				return -EINVAL;
+			}
+		}
 		close(fd);
-		printf("lockfile for port exists, ignoring\n");
+
+		ret = kill(pid, 0);
+
+		if (ret < 0 && errno == ESRCH)
+			printf("removing stale lockfile\n");
+		else if (!opt_force)
+			main_usage(3, "lockfile for port exists", device);
+		else
+			printf("lockfile for port exists, ignoring\n");
 		serial_unlock();
 	}
 
