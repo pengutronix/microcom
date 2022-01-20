@@ -152,32 +152,17 @@ static void serial_exit(struct ios_ops *ios)
 
 #define BUFLEN 512
 
-struct ios_ops * serial_init(char *device)
+static int serial_lock(char *device)
 {
-	struct termios pts;	/* termios settings on port */
-	struct ios_ops *ops;
+	const char *substring;
 	int fd;
-	char *substring;
 	long pid;
 	int ret;
 
-	ops = malloc(sizeof(*ops));
-	if (!ops)
-		return NULL;
 	lockfile = malloc(BUFLEN);
 	if (!lockfile)
-		return NULL;
+		return -ENOMEM;
 
-	ops->write = serial_write;
-	ops->read = serial_read;
-	ops->set_speed = serial_set_speed;
-	ops->set_flow = serial_set_flow;
-	ops->set_handshake_line = serial_set_handshake_line;
-	ops->send_break = serial_send_break;
-	ops->exit = serial_exit;
-	ops->istelnet = false;
-
-	/* check lockfile */
 	substring = strrchr(device, '/');
 	if (substring)
 		substring++;
@@ -187,7 +172,7 @@ struct ios_ops * serial_init(char *device)
 	ret = snprintf(lockfile, BUFLEN, "/var/lock/LCK..%s", substring);
 	if (ret >= BUFLEN) {
 		printf("path to lockfile too long\n");
-		exit(1);
+		return -EINVAL;
 	}
 
 	fd = open(lockfile, O_RDONLY);
@@ -206,15 +191,43 @@ struct ios_ops * serial_init(char *device)
 	if (fd < 0 && opt_force) {
 		printf("cannot create lockfile. ignoring\n");
 		lockfile = NULL;
-		goto force;
+		return 0;
 	}
 	if (fd < 0)
 		main_usage(3, "cannot create lockfile", device);
+
 	/* Kermit wants binary pid */
 	pid = getpid();
 	write(fd, &pid, sizeof(long));
 	close(fd);
-force:
+
+	return 0;
+}
+
+struct ios_ops * serial_init(char *device)
+{
+	struct termios pts;	/* termios settings on port */
+	struct ios_ops *ops;
+	int fd;
+	int ret;
+
+	ops = malloc(sizeof(*ops));
+	if (!ops)
+		return NULL;
+
+	ops->write = serial_write;
+	ops->read = serial_read;
+	ops->set_speed = serial_set_speed;
+	ops->set_flow = serial_set_flow;
+	ops->set_handshake_line = serial_set_handshake_line;
+	ops->send_break = serial_send_break;
+	ops->exit = serial_exit;
+	ops->istelnet = false;
+
+	ret = serial_lock(device);
+	if (ret < 0)
+		return NULL;
+
 	/* open the device */
 	fd = open(device, O_RDWR | O_NONBLOCK);
 	ops->fd = fd;
