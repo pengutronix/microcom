@@ -20,6 +20,7 @@
 ****************************************************************************/
 #ifndef MICROCOM_H
 #define MICROCOM_H
+#include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>

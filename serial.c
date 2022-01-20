@@ -287,6 +287,13 @@ struct ios_ops * serial_init(char *device)
 		main_usage(2, "cannot open device", device);
 	}
 
+	ret = flock(fd, LOCK_EX | LOCK_NB);
+	if (ret < 0) {
+		if (!opt_force)
+			main_usage(3, "could not flock port", device);
+		printf("could not flock port, ignoring\n");
+	}
+
 	/* modify the port configuration */
 	tcgetattr(fd, &pts);
 	memcpy(&pots, &pts, sizeof (pots));
