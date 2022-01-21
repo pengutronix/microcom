@@ -41,6 +41,11 @@ AS_IF([test "x$enable_can" = "xyes"],
 
 AM_CONDITIONAL([CAN], [test "x$enable_can" = "xyes"])
 
+AC_ARG_ENABLE([file-locking], [AS_HELP_STRING([--enable-file-locking], [enable usage of lockfiles in /var/lock @<:@default=yes@:>@])],, [enable_file_locking=yes])
+
+AS_IF([test "x$enable_file_locking" = "xyes"],
+      [AC_DEFINE([USE_FILE_LOCKING], [1], [Define if file locking in /var/lock should be used])])
+
 AC_CONFIG_FILES([Makefile])
 
 AC_OUTPUT

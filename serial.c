@@ -27,7 +27,6 @@
 #include "microcom.h"
 
 static struct termios pots;		/* old port termios settings to restore */
-static char *lockfile;
 
 static void init_comm(struct termios *pts)
 {
@@ -134,20 +133,14 @@ static int serial_send_break(struct ios_ops *ios)
 	return 0;
 }
 
+#ifdef USE_FILE_LOCKING
+
+static char *lockfile;
 /* unlink the lockfile */
-static void serial_unlock()
+static void serial_unlock(void)
 {
 	if (lockfile)
 		unlink(lockfile);
-}
-
-/* restore original terminal settings on exit */
-static void serial_exit(struct ios_ops *ios)
-{
-	tcsetattr(ios->fd, TCSANOW, &pots);
-	close(ios->fd);
-	free(ios);
-	serial_unlock();
 }
 
 #define BUFLEN 512
@@ -252,6 +245,28 @@ static int serial_lock(char *device)
 	close(fd);
 
 	return 0;
+}
+
+#else /* #ifdef USE_FILE_LOCKING */
+
+static void serial_unlock(void)
+{
+}
+
+static int serial_lock(char *device)
+{
+	return 0;
+}
+
+#endif /* #ifdef USE_FILE_LOCKING / #else */
+
+/* restore original terminal settings on exit */
+static void serial_exit(struct ios_ops *ios)
+{
+	tcsetattr(ios->fd, TCSANOW, &pots);
+	close(ios->fd);
+	free(ios);
+	serial_unlock();
 }
 
 struct ios_ops * serial_init(char *device)

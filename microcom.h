@@ -35,6 +35,8 @@
 #include <unistd.h>
 #include <assert.h>
 
+#include "config.h"
+
 #define DEFAULT_BAUDRATE 115200
 #define DEFAULT_DEVICE "/dev/ttyS0"
 #define DEFAULT_CAN_INTERFACE "can0"
