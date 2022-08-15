@@ -217,7 +217,7 @@ char *answerback;
 
 static void write_receive_buf(const unsigned char *buf, int len)
 {
-    if (!len) return;
+	if (!len) return;
 	if (timestamps) {
 		if (buf[len - 1] == '\n' || buf[len -1] == '\r') {
 			new_line = true;
@@ -243,7 +243,7 @@ static void write_receive_buf(const unsigned char *buf, int len)
 	} else {
 		write(STDOUT_FILENO, buf, len);
 	}
-    if (logfd >= 0) write(logfd, buf, len);
+	if (logfd >= 0) write(logfd, buf, len);
 }
 
 static int ios_printf(struct ios_ops *ios, const char *format, ...)
