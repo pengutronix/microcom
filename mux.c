@@ -25,6 +25,11 @@
 
 #define BUFSIZE 1024
 
+struct timeval now;
+struct tm *timeinfo;
+
+char new_line = true;
+
 /* This is called with buf[-2:0] being IAC SB COM_PORT_OPTION */
 static int do_com_port_option(struct ios_ops *ios, unsigned char *buf, int len)
 {
@@ -210,14 +215,35 @@ static int do_subneg(struct ios_ops *ios, unsigned char *buf, int len)
 static int logfd = -1;
 char *answerback;
 
-static void write_receive_buf(const unsigned char *buf, int len)
-{
-	if (!len)
-		return;
+static void write_receive_buf(const unsigned char *buf, int len) {
+    if (!len) return;
+	if (timestamps) {
+    if (buf[0] == '\n' || buf[0] == '\r') {
+		new_line = true;
+		write(STDOUT_FILENO, buf, len);
+    } else {
+		if (new_line) {
+			new_line = false;
+			char tbuf[30];
+			memset(tbuf, 0, sizeof(tbuf));
+			gettimeofday(&now, NULL);
+			timeinfo = gmtime(&now.tv_sec);
+			snprintf(tbuf, sizeof(tbuf),
+				 "[%02d-%02d-%02d %02d:%02d:%02d:%03d] ",
+				 timeinfo->tm_mday, timeinfo->tm_mon + 1,
+				 timeinfo->tm_year + 1900, timeinfo->tm_hour,
+				 timeinfo->tm_min, timeinfo->tm_sec, now.tv_usec / 1000);
+			write(STDOUT_FILENO, tbuf, strlen(tbuf));
+			write(STDOUT_FILENO, buf, len);
+		} else {
+			write(STDOUT_FILENO, buf, len);
+		}
+    }
+	} else {
+		write(STDOUT_FILENO, buf, len);
+	}
 
-	write(STDOUT_FILENO, buf, len);
-	if (logfd >= 0)
-		write(logfd, buf, len);
+    if (logfd >= 0) write(logfd, buf, len);
 }
 
 static int ios_printf(struct ios_ops *ios, const char *format, ...)

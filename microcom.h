@@ -77,6 +77,7 @@ extern int debug;
 extern int opt_force;
 extern int listenonly;
 extern char *answerback;
+extern int timestamps;
 
 struct cmd {
 	char *name;
