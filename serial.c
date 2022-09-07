@@ -80,6 +80,80 @@ static int serial_set_handshake_line(struct ios_ops *ios, int pin, int enable)
 	return ret;
 }
 
+static const struct {
+	int speed;
+	speed_t flag;
+} bd_to_flg[] = {
+	{ 50, B50 },
+	{ 75, B75 },
+	{ 110, B110 },
+	{ 134, B134 },
+	{ 150, B150 },
+	{ 200, B200 },
+	{ 300, B300 },
+	{ 600, B600 },
+	{ 1200, B1200},
+	{ 1800, B1800},
+	{ 2400, B2400},
+	{ 4800, B4800},
+	{ 9600, B9600},
+	{ 19200, B19200},
+	{ 38400, B38400},
+	{ 57600, B57600},
+	{ 115200, B115200},
+	{ 230400, B230400},
+#ifdef B460800
+	{ 460800, B460800},
+#endif
+#ifdef B500000
+	{ 500000, B500000},
+#endif
+#ifdef B576000
+	{ 576000, B576000},
+#endif
+#ifdef B921600
+	{ 921600, B921600},
+#endif
+#ifdef B1000000
+	{ 1000000, B1000000},
+#endif
+#ifdef B1152000
+	{ 1152000, B1152000},
+#endif
+#ifdef B1500000
+	{ 1500000, B1500000},
+#endif
+#ifdef B2000000
+	{ 2000000, B2000000},
+#endif
+#ifdef B2500000
+	{ 2500000, B2500000},
+#endif
+#ifdef B3000000
+	{ 3000000, B3000000},
+#endif
+#ifdef B3500000
+	{ 3500000, B3500000},
+#endif
+#ifdef B4000000
+	{ 4000000, B4000000},
+#endif
+};
+
+static int baudrate_to_flag(int speed, speed_t *flag)
+{
+	size_t i;
+
+	/* possible optimisation: binary search for speed */
+	for (i = 0; i < ARRAY_SIZE(bd_to_flg); ++i)
+		if (bd_to_flg[i].speed == speed) {
+			*flag = bd_to_flg[i].flag;
+			return 0;
+		}
+
+	return -1;
+}
+
 static int serial_set_speed(struct ios_ops *ios, unsigned long speed)
 {
 	struct termios pts;	/* termios settings on port */
