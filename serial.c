@@ -203,9 +203,20 @@ static int serial_set_flow(struct ios_ops *ios, int flow)
 
 static int serial_send_break(struct ios_ops *ios)
 {
-	tcsendbreak(ios->fd, 0);
+	int ret;
+	struct timeval delay = {
+		.tv_sec = 0,
+		.tv_usec = 400000,
+	};
 
-	return 0;
+	ret = ioctl(ios->fd, TIOCSBRK, NULL);
+	if (ret < 0)
+		return ret;
+
+	select(0, NULL, NULL, NULL, &delay);
+
+	ret = ioctl(ios->fd, TIOCCBRK, NULL);
+	return ret;
 }
 
 /* restore original terminal settings on exit */
