@@ -69,9 +69,6 @@ void microcom_cmd_usage(char *str);
 
 void main_usage(int exitcode, char *str, char *dev);
 
-int flag_to_baudrate(speed_t speed);
-int baudrate_to_flag(int speed, speed_t *flag);
-
 extern struct ios_ops *ios;
 extern int debug;
 extern int opt_force;

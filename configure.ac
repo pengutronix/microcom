@@ -12,7 +12,7 @@ AC_PROG_CC
 AC_SYS_LARGEFILE
 
 # Checks for libraries.
-AC_CHECK_LIB([readline], [readline])
+AC_SEARCH_LIBS([readline], [readline],,[AC_MSG_ERROR([Please install readline development files (libreadline-dev)])])
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h netdb.h netinet/in.h stdint.h stdlib.h string.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h termios.h unistd.h])
