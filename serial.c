@@ -19,6 +19,7 @@
 ** Rev. 1.01 - March 2000
 ** Rev. 1.02 - June 2000
 ****************************************************************************/
+#include "config.h"
 
 #include <limits.h>
 #include <sys/file.h>

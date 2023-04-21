@@ -6,6 +6,8 @@
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  */
+#include "config.h"
+
 #include <stdio.h>
 #include <sys/select.h>
 #include <stdint.h>

@@ -15,6 +15,7 @@
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU General Public License for more details at www.gnu.org
 ****************************************************************************/
+#include "config.h"
 
 #include <stdlib.h>
 #include <arpa/telnet.h>
