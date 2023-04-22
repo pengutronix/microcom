@@ -22,8 +22,12 @@
 #include <arpa/inet.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <time.h>
 
 #define BUFSIZE 1024
+
+struct timeval now;
+struct tm *timeinfo;
 
 /* This is called with buf[-2:0] being IAC SB COM_PORT_OPTION */
 static int do_com_port_option(struct ios_ops *ios, unsigned char *buf, int len)
@@ -210,14 +214,37 @@ static int do_subneg(struct ios_ops *ios, unsigned char *buf, int len)
 static int logfd = -1;
 char *answerback;
 
+static void write_with_ts(const unsigned char *buf, int len) {
+	char tbuf[30];
+
+	for (int i = 0 ; i < len ; i++) {
+
+		write(STDOUT_FILENO, &buf[i], 1);
+		if (logfd >= 0) write(logfd, &buf[i], 1);
+		if (buf[i] == '\n') {
+			memset(tbuf, 0, sizeof(tbuf));
+			gettimeofday(&now, NULL);
+			timeinfo = gmtime(&now.tv_sec);
+			snprintf(tbuf, sizeof(tbuf),
+					"[%02d-%02d-%02d %02d:%02d:%02d:%03d] ",
+					timeinfo->tm_mday, timeinfo->tm_mon + 1,
+					timeinfo->tm_year + 1900, timeinfo->tm_hour,
+					timeinfo->tm_min, timeinfo->tm_sec, now.tv_usec / 1000);
+			write(STDOUT_FILENO, tbuf, strlen(tbuf));
+			if (logfd >= 0) write(logfd, tbuf, strlen(tbuf));
+		}
+	}
+}
+
 static void write_receive_buf(const unsigned char *buf, int len)
 {
-	if (!len)
-		return;
-
-	write(STDOUT_FILENO, buf, len);
-	if (logfd >= 0)
-		write(logfd, buf, len);
+	if (!len) return;
+	if (timestamps) {
+		write_with_ts(buf, len);
+	} else {
+		write(STDOUT_FILENO, buf, len);
+		if (logfd >= 0) write(logfd, buf, len);
+	}
 }
 
 static int ios_printf(struct ios_ops *ios, const char *format, ...)

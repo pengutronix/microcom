@@ -189,6 +189,15 @@ static int cmd_log(int argc, char *argv[])
 	return ret;
 }
 
+static int cmd_timestamp(int argc, char *argv[])
+{
+	if(timestamps)
+		timestamps = 0;
+	else
+		timestamps = 1;
+	return MICROCOM_CMD_START;
+}
+
 static int cmd_comment(int argc, char *argv[])
 {
 	return 0;
@@ -245,6 +254,11 @@ static struct cmd cmds[] = {
 		.name = "#",
 		.fn = cmd_comment,
 		.info = "comment",
+	}, {
+		.name = "timestamps",
+		.fn = cmd_timestamp,
+		.info = "turns on timestamps for each line of output",
+		.help = "toggle on/off",
 	},
 };
 
