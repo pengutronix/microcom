@@ -36,6 +36,7 @@ static struct termios sots;	/* old stdout/in termios settings to restore */
 
 struct ios_ops *ios;
 int debug;
+int timestamps = 0;
 
 void init_terminal(void)
 {
@@ -97,6 +98,7 @@ void main_usage(int exitcode, char *str, char *dev)
 		"    -f, --force                          ignore existing lock file\n"
 		"    -d, --debug                          output debugging info\n"
 		"    -l, --logfile=<logfile>              log output to <logfile>\n"
+		"    -z, --timestamps                     Enable timestamps\n"
 		"    -o, --listenonly                     Do not modify local terminal, do not send input\n"
 		"                                         from stdin\n"
 		"    -a,  --answerback=<str>              specify the answerback string sent as response to\n"
@@ -135,11 +137,12 @@ int main(int argc, char *argv[])
 		{ "logfile", required_argument, NULL, 'l'},
 		{ "listenonly", no_argument, NULL, 'o'},
 		{ "answerback", required_argument, NULL, 'a'},
+		{ "timestamps", no_argument, NULL, 'z' },
 		{ "version", no_argument, NULL, 'v' },
 		{ },
 	};
 
-	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dfl:oi:a:v", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dfl:oi:a:vz", long_options, NULL)) != -1) {
 		switch (opt) {
 			case '?':
 				main_usage(1, "", "");
@@ -179,6 +182,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'a':
 				answerback = optarg;
+				break;
+			case 'z':
+				timestamps = 1;
 				break;
 		}
 	}
