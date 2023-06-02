@@ -1,0 +1,38 @@
+---
+name: Build test
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run:
+          sudo apt install
+          libreadline6-dev
+          autoconf
+          automake
+
+      - name: Prepare (autoreconf)
+        run: autoreconf -i
+
+      - name: Prepare (configure)
+        run: ./configure
+
+      - name: Build
+        run: make
+
+      - name: Run check
+        run: make check
+
+      - name: Run distcheck
+        run: make distcheck
