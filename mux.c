@@ -449,19 +449,20 @@ int mux_loop(struct ios_ops *ios)
 			/* pf has characters for us */
 			len = ios->read(ios, buf, BUFSIZE);
 			if (len < 0) {
-				ret = -errno;
-				fprintf(stderr, "%s\n", strerror(-ret));
-				return ret;
-			}
-			if (len == 0) {
+				if (errno != EAGAIN && errno != EWOULDBLOCK) {
+					ret = -errno;
+					fprintf(stderr, "%s\n", strerror(-ret));
+					return ret;
+				}
+			} else if (len == 0) {
 				fprintf(stderr, "Got EOF from port\n");
 				return -EINVAL;
-			}
-
-			i = handle_receive_buf(ios, buf, len);
-			if (i < 0) {
-				fprintf(stderr, "%s\n", strerror(-i));
-				return i;
+			} else {
+				i = handle_receive_buf(ios, buf, len);
+				if (i < 0) {
+					fprintf(stderr, "%s\n", strerror(-i));
+					return i;
+				}
 			}
 		}
 
