@@ -153,6 +153,12 @@ static int cmd_quit(int argc, char *argv[])
 	return 0;
 }
 
+static int cmd_sendescape(int argc, char *argv[])
+{
+	ios->write(ios, "\x1c", 1);
+	return 0;
+}
+
 static int cmd_help(int argc, char *argv[])
 {
 	struct cmd *cmd;
@@ -225,6 +231,10 @@ static struct cmd cmds[] = {
 		.name = "break",
 		.fn = cmd_break,
 		.info = "send break",
+	}, {
+		.name = "sendescape",
+		.fn = cmd_sendescape,
+		.info = "send a Ctrl-\\",
 	}, {
 		.name = "quit",
 		.fn = cmd_quit,
