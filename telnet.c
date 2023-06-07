@@ -39,13 +39,21 @@ static ssize_t telnet_read(struct ios_ops *ios, void *buf, size_t count)
 
 static int telnet_set_speed(struct ios_ops *ios, unsigned long speed)
 {
+	unsigned char buf2[14] = {IAC, SB, TELNET_OPTION_COM_PORT_CONTROL, SET_BAUDRATE_CS};
+	size_t offset = 4;
+	int i;
 
-	unsigned char buf2[] = {IAC, SB, TELNET_OPTION_COM_PORT_CONTROL, SET_BAUDRATE_CS, 0, 0, 0, 0, IAC, SE};
-	int *speedp = (int *)&buf2[4];
+	for (i = 0; i < 4; ++i) {
+		buf2[offset] = (speed >> (24 - 8 * i)) & 0xff;
+		if (buf2[offset++] == IAC)
+			buf2[offset++] = IAC;
+	}
 
-	*speedp = htonl(speed);
+	buf2[offset++] = IAC;
+	buf2[offset++] = SE;
+
 	dbg_printf("-> IAC SB COM_PORT_CONTROL SET_BAUDRATE_CS 0x%lx IAC SE\n", speed);
-	write(ios->fd, buf2, 10);
+	write(ios->fd, buf2, offset);
 
 	return 0;
 }
