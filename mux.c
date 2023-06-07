@@ -85,14 +85,14 @@ static int do_com_port_option(struct ios_ops *ios, unsigned char *buf, int len)
 		break;
 	case SET_CONTROL_SC:
 		i++;
-		dbg_printf("SET_CONTROL_SC 0x%02x ", buf[i]);
+		dbg_printf("SET_CONTROL_SC 0x%02x ", buf[2]);
 		break;
 	case NOTIFY_LINESTATE_SC:
 		dbg_printf("NOTIFY_LINESTATE_SC ");
 		break;
 	case NOTIFY_MODEMSTATE_SC:
 		i++;
-		dbg_printf("NOTIFY_MODEMSTATE_SC 0x%02x ", buf[i]);
+		dbg_printf("NOTIFY_MODEMSTATE_SC 0x%02x ", buf[2]);
 		break;
 	case FLOWCONTROL_SUSPEND_SC:
 		dbg_printf("FLOWCONTROL_SUSPEND_SC ");
@@ -110,7 +110,7 @@ static int do_com_port_option(struct ios_ops *ios, unsigned char *buf, int len)
 		dbg_printf("PURGE_DATA_SC ");
 		break;
 	default:
-		dbg_printf("??? %d ", buf[i]);
+		dbg_printf("??? %d ", buf[1]);
 		break;
 	}
 
