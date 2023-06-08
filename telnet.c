@@ -596,11 +596,9 @@ struct ios_ops *telnet_init(char *hostport)
 		}
 		printf("connected to %s (port %s)\n", connected_host, connected_port);
 
-		/* send intent to do and accept COM_PORT stuff */
+		/* send intent we WILL do COM_PORT stuff */
 		dbg_printf("-> WILL COM_PORT_CONTROL\n");
 		dprintf(sock, "%c%c%c", IAC, WILL, TELNET_OPTION_COM_PORT_CONTROL);
-		dbg_printf("-> DO COM_PORT_CONTROL\n");
-		dprintf(sock, "%c%c%c", IAC, DO, TELNET_OPTION_COM_PORT_CONTROL);
 		goto out;
 	}
 
