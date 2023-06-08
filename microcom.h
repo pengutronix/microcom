@@ -51,7 +51,6 @@ struct ios_ops {
 	int (*set_handshake_line)(struct ios_ops *, int pin, int enable);
 	int (*send_break)(struct ios_ops *);
 	void (*exit)(struct ios_ops *);
-	bool istelnet;
 	int fd;
 };
 

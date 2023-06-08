@@ -245,7 +245,6 @@ struct ios_ops * serial_init(char *device)
 	ops->set_handshake_line = serial_set_handshake_line;
 	ops->send_break = serial_send_break;
 	ops->exit = serial_exit;
-	ops->istelnet = false;
 
 	/* open the device */
 	fd = open(device, O_RDWR | O_NONBLOCK);
