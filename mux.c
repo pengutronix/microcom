@@ -27,6 +27,48 @@
 
 #define BUFSIZE 1024
 
+static ssize_t get(unsigned char *buf, unsigned char *out, size_t len)
+{
+	if (!len)
+		return -1;
+
+	if (buf[0] == IAC) {
+		if (len < 1)
+			return -1;
+		if (buf[1] == IAC) {
+			*out = IAC;
+			return 2;
+		}
+		return -1;
+	} else {
+		*out = buf[0];
+		return 1;
+	}
+}
+
+static size_t getl(unsigned char *buf, uint32_t *out, size_t len)
+{
+	*out = 0;
+	int i;
+	size_t offset = 0;
+
+	for (i = 0; i < 4; ++i) {
+		ssize_t getres;
+		unsigned char c;
+
+		getres = get(buf + offset, &c, len - offset);
+		if (getres < 0)
+			return getres;
+
+		*out <<= 8;
+		*out |= c;
+
+		offset += getres;
+	}
+
+	return offset;
+}
+
 /* This is called with buf[-2:0] being IAC SB COM_PORT_OPTION */
 static int do_com_port_option(struct ios_ops *ios, unsigned char *buf, int len)
 {
@@ -70,9 +112,17 @@ static int do_com_port_option(struct ios_ops *ios, unsigned char *buf, int len)
 		dbg_printf("PURGE_DATA_CS ");
 		break;
 	case SET_BAUDRATE_SC:
-		dbg_printf("SET_BAUDRATE_SC %d ",
-			buf[2] << 24 | buf[3] << 16 | buf[4] << 8 | buf[5]);
-		i += 4;
+		{
+			uint32_t baudrate;
+			ssize_t getres = getl(buf + 2, &baudrate, len - 2);
+
+			if (getres < 0) {
+				fprintf(stderr, "Incomplete or broken SB (SET_BAUDRATE_SC)\n");
+				return getres;
+			}
+			dbg_printf("SET_BAUDRATE_SC %u ", baudrate);
+			i += getres;;
+		}
 		break;
 	case SET_DATASIZE_SC:
 		dbg_printf("SET_DATASIZE_SC ");
@@ -84,15 +134,35 @@ static int do_com_port_option(struct ios_ops *ios, unsigned char *buf, int len)
 		dbg_printf("SET_STOPSIZE_SC ");
 		break;
 	case SET_CONTROL_SC:
-		i++;
-		dbg_printf("SET_CONTROL_SC 0x%02x ", buf[i]);
+		{
+			unsigned char ctrl;
+			ssize_t getres = get(buf + 2, &ctrl, len - 2);
+
+			if (getres < 0) {
+				fprintf(stderr, "Incomplete or broken SB (SET_CONTROL_SC)\n");
+				return getres;
+			}
+
+			dbg_printf("SET_CONTROL_SC 0x%02x ", ctrl);
+			i += getres;
+		}
 		break;
 	case NOTIFY_LINESTATE_SC:
 		dbg_printf("NOTIFY_LINESTATE_SC ");
 		break;
 	case NOTIFY_MODEMSTATE_SC:
-		i++;
-		dbg_printf("NOTIFY_MODEMSTATE_SC 0x%02x ", buf[i]);
+		{
+			unsigned char ms;
+			ssize_t getres = get(buf + 2, &ms, len - 2);
+
+			if (getres < 0) {
+				fprintf(stderr, "Incomplete or broken SB (NOTIFY_MODEMSTATE_SC)\n");
+				return getres;
+			}
+
+			dbg_printf("NOTIFY_MODEMSTATE_SC 0x%02x ", ms);
+			i += getres;
+		}
 		break;
 	case FLOWCONTROL_SUSPEND_SC:
 		dbg_printf("FLOWCONTROL_SUSPEND_SC ");
@@ -110,7 +180,7 @@ static int do_com_port_option(struct ios_ops *ios, unsigned char *buf, int len)
 		dbg_printf("PURGE_DATA_SC ");
 		break;
 	default:
-		dbg_printf("??? %d ", buf[i]);
+		dbg_printf("??? %d ", buf[1]);
 		break;
 	}
 
