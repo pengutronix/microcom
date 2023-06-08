@@ -391,7 +391,33 @@ static int handle_command(struct ios_ops *ios, unsigned char *buf, int len)
 
 static ssize_t telnet_write(struct ios_ops *ios, const void *buf, size_t count)
 {
-	return write(ios->fd, buf, count);
+	size_t handled = 0;
+	ssize_t ret;
+	void *iac;
+
+	/*
+	 * To send an IAC character in the data stream, two IACs must be sent.
+	 * So find the first IAC in the data to be send (if any), send the data
+	 * before that IAC unquoted, then send the double IAC. Repeat until
+	 * all IACs are handled.
+	 */
+	while ((iac = memchr(buf + handled, IAC, count - handled)) != NULL) {
+		if (iac - (buf + handled)) {
+			ret = write(ios->fd, buf + handled, iac - (buf + handled));
+			if (ret < 0)
+				return ret;
+			handled += ret;
+		} else {
+			dprintf(ios->fd, "%c%c", IAC, IAC);
+			handled += 1;
+		}
+	}
+
+	/* Send the remaining data that needs no quoting. */
+	ret = write(ios->fd, buf + handled, count - handled);
+	if (ret < 0)
+		return ret;
+	return ret + handled;
 }
 
 static ssize_t telnet_read(struct ios_ops *ios, void *buf, size_t count)
