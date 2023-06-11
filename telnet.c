@@ -29,7 +29,7 @@
 
 #include "microcom.h"
 
-static int ios_printf(struct ios_ops *ios, const char *format, ...)
+static int telnet_printf(struct ios_ops *ios, const char *format, ...)
 {
 	char buf[20];
 	int size, written = 0;
@@ -49,7 +49,7 @@ static int ios_printf(struct ios_ops *ios, const char *format, ...)
 	}
 
 	while (written < size) {
-		ret = ios->write(ios, buf + written, size - written);
+		ret = write(ios->fd, buf + written, size - written);
 		if (ret < 0)
 			return ret;
 
@@ -343,7 +343,7 @@ static int handle_command(struct ios_ops *ios, unsigned char *buf, int len)
 		} else {
 			/* unknown/unimplemented option -> DONT */
 			dbg_printf(" -> DONT\n");
-			ios_printf(ios, "%c%c%c", IAC, DONT, buf[2]);
+			telnet_printf(ios, "%c%c%c", IAC, DONT, buf[2]);
 		}
 		return 3;
 
@@ -371,7 +371,7 @@ static int handle_command(struct ios_ops *ios, unsigned char *buf, int len)
 		} else {
 			/* Oh, cannot handle that one, so send a WONT */
 			dbg_printf(" -> WONT\n");
-			ios_printf(ios, "%c%c%c", IAC, WONT, buf[2]);
+			telnet_printf(ios, "%c%c%c", IAC, WONT, buf[2]);
 		}
 		return 3;
 
