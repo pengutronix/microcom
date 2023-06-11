@@ -235,6 +235,13 @@ static int do_com_port_option(struct ios_ops *ios, unsigned char *buf, int len)
 	return -EINVAL;
 }
 
+/* This is called with buf[-2:0] being IAC SB COM_PORT_OPTION */
+static int do_binary_transmission_option(struct ios_ops *ios, unsigned char *buf, int len)
+{
+	/* There are no subcommands for the BINARY_TRANSMISSION option (rfc856) */
+	return -EINVAL;
+}
+
 struct telnet_option {
 	unsigned char id;
 	const char *name;
@@ -251,6 +258,8 @@ static const struct telnet_option telnet_options[] = {
 		.sent_will = true,
 	}, {
 		TELNET_OPTION(BINARY_TRANSMISSION),
+		.subneg_handler = do_binary_transmission_option,
+		.sent_will = true,
 	}, {
 		TELNET_OPTION(ECHO),
 	}, {
@@ -601,6 +610,10 @@ struct ios_ops *telnet_init(char *hostport)
 		dprintf(sock, "%c%c%c", IAC, WILL, TELNET_OPTION_COM_PORT_CONTROL);
 		dbg_printf("-> DO COM_PORT_CONTROL\n");
 		dprintf(sock, "%c%c%c", IAC, DO, TELNET_OPTION_COM_PORT_CONTROL);
+		dbg_printf("-> DO BINARY_TRANSMISSION\n");
+		dprintf(sock, "%c%c%c", IAC, DO, TELNET_OPTION_BINARY_TRANSMISSION);
+		dbg_printf("-> WILL BINARY_TRANSMISSION\n");
+		dprintf(sock, "%c%c%c", IAC, WILL, TELNET_OPTION_BINARY_TRANSMISSION);
 		goto out;
 	}
 
