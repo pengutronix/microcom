@@ -101,12 +101,14 @@ void main_usage(int exitcode, char *str, char *dev)
 		"    -l, --logfile=<logfile>              log output to <logfile>\n"
 		"    -o, --listenonly                     Do not modify local terminal, do not send input\n"
 		"                                         from stdin\n"
-		"    -a,  --answerback=<str>              specify the answerback string sent as response to\n"
+		"    -a, --answerback=<str>               specify the answerback string sent as response to\n"
 		"                                         an ENQ (ASCII 0x05) Character\n"
+		"    -e, --escape-char=<chr>              escape charater to use with Ctrl (%c)\n"
 		"    -v, --version                        print version string\n"
 		"    -h, --help                           This help\n",
 		DEFAULT_DEVICE, DEFAULT_BAUDRATE,
-		DEFAULT_CAN_INTERFACE, DEFAULT_CAN_ID, DEFAULT_CAN_ID);
+		DEFAULT_CAN_INTERFACE, DEFAULT_CAN_ID, DEFAULT_CAN_ID,
+		DEFAULT_ESCAPE_CHAR);
 	fprintf(stderr, "Exitcode %d - %s %s\n\n", exitcode, str, dev);
 	exit(exitcode);
 }
@@ -115,6 +117,7 @@ int opt_force = 0;
 unsigned long current_speed = DEFAULT_BAUDRATE;
 int current_flow = FLOW_NONE;
 int listenonly = 0;
+char escape_char = DEFAULT_ESCAPE_CHAR;
 
 int main(int argc, char *argv[])
 {
@@ -141,7 +144,7 @@ int main(int argc, char *argv[])
 		{ },
 	};
 
-	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dfl:oi:a:v", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dfl:oi:a:e:v", long_options, NULL)) != -1) {
 		switch (opt) {
 			case '?':
 				main_usage(1, "", "");
@@ -181,6 +184,13 @@ int main(int argc, char *argv[])
 				break;
 			case 'a':
 				answerback = optarg;
+				break;
+			case 'e':
+				if (strlen(optarg) != 1) {
+					fprintf(stderr, "Option -e requires a single character argument.\n");
+					exit(EXIT_FAILURE);
+				}
+				escape_char = *optarg;
 				break;
 		}
 	}
@@ -229,7 +239,7 @@ int main(int argc, char *argv[])
 	ios->set_flow(ios, current_flow);
 
 	if (!listenonly) {
-		printf("Escape character: Ctrl-\\\n");
+		printf("Escape character: Ctrl-%c\n", escape_char);
 		printf("Type the escape character to get to the prompt.\n");
 
 		/* Now deal with the local terminal side */

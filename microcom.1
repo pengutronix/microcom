@@ -14,6 +14,8 @@ microcom \- A minimalistic terminal program
 .IR host : port ]
 .RB [\| \-s
 .IR speed \|]
+.RB [\| \-e
+.IR escape-char \|]
 .br
 .B microcom -c
 .IB interface : rx_id : tx_id
@@ -64,6 +66,9 @@ work in telnet (rfc2217) mode.
 .TP
 .BI \-c\  interface\fB:\fIrx_id\fB:\fItx_id\fR,\ \fI \-\-can= interface\fB:\fIrx_id\fB:\fItx_id
 work in CAN mode (default: \fBcan0:200:200\fR)
+.TP
+.BI \-e\  escape-character \fR,\ \fB\-\-escape-char= char
+use specified escape charater with Ctrl (default \fB\\\fR).
 .TP
 .BR -h ", " \-\-help
 Show help.

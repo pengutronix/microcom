@@ -29,6 +29,7 @@
 #include <stdbool.h>
 #include <signal.h>
 #include <string.h>
+#include <sys/ttydefaults.h>
 #include <termios.h>
 #include <unistd.h>
 #include <assert.h>
@@ -37,6 +38,7 @@
 #define DEFAULT_DEVICE "/dev/ttyS0"
 #define DEFAULT_CAN_INTERFACE "can0"
 #define DEFAULT_CAN_ID (0x200)
+#define DEFAULT_ESCAPE_CHAR ('\\')
 
 struct ios_ops {
 	ssize_t (*write)(struct ios_ops *, const void *buf, size_t count);
@@ -73,6 +75,7 @@ extern int debug;
 extern int opt_force;
 extern int listenonly;
 extern char *answerback;
+extern char escape_char;
 
 struct cmd {
 	char *name;
