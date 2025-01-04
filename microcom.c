@@ -183,6 +183,9 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	if (optind < argc)
+		main_usage(1, "", "");
+
 	if (answerback) {
 		ret = asprintf(&answerback, "%s\n", answerback);
 		if (ret < 0)
