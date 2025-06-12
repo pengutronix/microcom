@@ -53,10 +53,7 @@ static ssize_t can_write(struct ios_ops *ios, const void *buf, size_t count)
 		loopcount = min(count, sizeof(to_can.data));
 		memcpy(to_can.data, buf, loopcount);
 		to_can.can_dlc = loopcount;
-retry:
 		err = write(ios->fd, &to_can, sizeof(to_can));
-		if (err < 0 && errno == EINTR)
-			goto retry;
 
 		if (err < 0)
 			return err;
@@ -75,10 +72,7 @@ static ssize_t can_read(struct ios_ops *ios, void *buf, size_t count)
 	struct can_frame from_can;
 	ssize_t ret;
 
-retry:
 	ret = read(ios->fd, &from_can, sizeof(from_can));
-	if (ret < 0 && errno != EINTR)
-		goto retry;
 
 	if (ret < 0)
 		return ret;
