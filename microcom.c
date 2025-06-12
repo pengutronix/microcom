@@ -43,15 +43,17 @@ void init_terminal(void)
 
 	memcpy(&sts, &sots, sizeof (sots));     /* to be used upon exit */
 
-	/* again, some arbitrary things */
-	sts.c_iflag &= ~(IGNCR | INLCR | ICRNL);
-	sts.c_iflag |= IGNBRK;
-	sts.c_lflag &= ~ISIG;
+	/* Implement what `stty raw` does. */
+	sts.c_iflag &= ~(IGNBRK | BRKINT | IGNPAR | PARMRK | INPCK |
+			 ISTRIP | INLCR | IGNCR | ICRNL | IXON | IXOFF |
+			 IUCLC | IXANY | IMAXBEL);
+	sts.c_lflag &= ~(ICANON | ISIG | XCASE);
+	sts.c_oflag &= ~OPOST;
 	sts.c_cc[VMIN] = 1;
 	sts.c_cc[VTIME] = 0;
-	sts.c_lflag &= ~ICANON;
+
 	/* no local echo: allow the other end to do the echoing */
-	sts.c_lflag &= ~(ECHO | ECHOCTL | ECHONL);
+	sts.c_lflag &= ~ECHO;
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &sts);
 }
