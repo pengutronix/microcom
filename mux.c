@@ -29,7 +29,7 @@ char *answerback;
 
 static void write_receive_buf(const unsigned char *buf, int len)
 {
-	if (!len)
+	if (len <= 0)
 		return;
 
 	write(STDOUT_FILENO, buf, len);
@@ -41,7 +41,7 @@ static int handle_receive_buf(struct ios_ops *ios, unsigned char *buf, int len)
 {
 	unsigned char *sendbuf = buf;
 
-	while (len) {
+	while (len > 0) {
 		switch (*buf) {
 		case 5:
 			write_receive_buf(sendbuf, buf - sendbuf);
