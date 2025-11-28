@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS = foreign
 ACLOCAL_AMFLAGS = -I m4 --install
 
-EXTRA_DIST = DCO README.md
+EXTRA_DIST = COPYING DCO README.md VERSION
 
 bin_PROGRAMS = microcom
 microcom_SOURCES = commands.c commands_fsl_imx.c microcom.c mux.c parser.c serial.c telnet.c

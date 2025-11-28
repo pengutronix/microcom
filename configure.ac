@@ -1,4 +1,4 @@
-AC_INIT([microcom], [2023.09.0], [oss-tools@pengutronix.de])
+AC_INIT([microcom], [m4_esyscmd_s(cat VERSION)], [oss-tools@pengutronix.de])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([dist-xz])
