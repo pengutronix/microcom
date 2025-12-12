@@ -2,6 +2,7 @@
 *~
 /*.o
 /microcom
+*.pyc
 
 # autotools stuff
 /.deps
