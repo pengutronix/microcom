@@ -18,6 +18,7 @@ static struct termios sots; /* old stdout/in termios settings to restore */
 
 struct ios_ops *ios;
 int debug = 0;
+int quiet = 0;
 
 void init_terminal(void)
 {
@@ -81,6 +82,7 @@ void main_usage(int exitcode, char *str, char *dev)
 		"                                         default: (%s:%x:%x)\n"
 		"    -f, --force                          ignore existing lock file\n"
 		"    -d, --debug                          output debugging info\n"
+		"    -q, --quiet                          do not print status information to stdout\n"
 		"    -l, --logfile=<logfile>              log output to <logfile>\n"
 		"    -o, --listenonly                     Do not modify local terminal, do not send input\n"
 		"                                         from stdin\n"
@@ -119,6 +121,7 @@ int main(int argc, char *argv[])
 		{ "telnet", required_argument, NULL, 't' },
 		{ "can", required_argument, NULL, 'c' },
 		{ "debug", no_argument, NULL, 'd' },
+		{ "quiet", no_argument, NULL, 'q' },
 		{ "force", no_argument, NULL, 'f' },
 		{ "logfile", required_argument, NULL, 'l' },
 		{ "listenonly", no_argument, NULL, 'o' },
@@ -127,7 +130,7 @@ int main(int argc, char *argv[])
 		{ 0 },
 	};
 
-	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dfl:oi:a:e:v", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dqfl:oi:a:e:v", long_options, NULL)) != -1) {
 		switch (opt) {
 		case '?':
 			main_usage(1, "", "");
@@ -158,6 +161,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'd':
 			debug = 1;
+			break;
+		case 'q':
+			quiet = 1;
 			break;
 		case 'l':
 			logfile = optarg;
@@ -216,8 +222,8 @@ int main(int argc, char *argv[])
 	ios->set_flow(ios, current_flow);
 
 	if (!listenonly) {
-		printf("Escape character: Ctrl-%c\n", escape_char);
-		printf("Type the escape character to get to the prompt.\n");
+		msg_printf("Escape character: Ctrl-%c\n", escape_char);
+		msg_printf("Type the escape character to get to the prompt.\n");
 
 		/* Now deal with the local terminal side */
 		tcgetattr(STDIN_FILENO, &sots);
