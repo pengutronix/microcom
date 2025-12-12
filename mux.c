@@ -25,7 +25,7 @@
 #define BUFSIZE 1024
 
 static int logfd = -1;
-char *answerback;
+unsigned char *answerback;
 
 static void write_receive_buf(const unsigned char *buf, int len)
 {
@@ -46,7 +46,7 @@ static int handle_receive_buf(struct ios_ops *ios, unsigned char *buf, int len)
 		case 5:
 			write_receive_buf(sendbuf, buf - sendbuf);
 			if (answerback)
-				ios->write(ios, answerback, strlen(answerback));
+				ios->write(ios, answerback, strlen((char *) answerback));
 			else
 				write_receive_buf(buf, 1);
 

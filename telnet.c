@@ -398,11 +398,11 @@ static int handle_command(struct ios_ops *ios, unsigned char *buf, int len)
 	}
 }
 
-static ssize_t telnet_write(struct ios_ops *ios, const void *buf, size_t count)
+static ssize_t telnet_write(struct ios_ops *ios, const unsigned char *buf, size_t count)
 {
 	size_t handled = 0;
 	ssize_t ret;
-	void *iac;
+	unsigned char *iac;
 
 	/*
 	 * To send an IAC character in the data stream, two IACs must be sent.
@@ -429,10 +429,10 @@ static ssize_t telnet_write(struct ios_ops *ios, const void *buf, size_t count)
 	return ret + handled;
 }
 
-static ssize_t telnet_read(struct ios_ops *ios, void *buf, size_t count)
+static ssize_t telnet_read(struct ios_ops *ios, unsigned char *buf, size_t count)
 {
-	ssize_t ret = read(ios->fd, buf, count);
-	void *iac;
+	ssize_t ret;
+	unsigned char *iac;
 	size_t handled = 0;
 
 	if (ret <= 0)

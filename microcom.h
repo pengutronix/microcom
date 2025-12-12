@@ -41,8 +41,8 @@
 #define DEFAULT_ESCAPE_CHAR ('\\')
 
 struct ios_ops {
-	ssize_t (*write)(struct ios_ops *, const void *buf, size_t count);
-	ssize_t (*read)(struct ios_ops *, void *buf, size_t count);
+	ssize_t (*write)(struct ios_ops *, const unsigned char *buf, size_t count);
+	ssize_t (*read)(struct ios_ops *, unsigned char *buf, size_t count);
 	int (*set_speed)(struct ios_ops *, unsigned long speed);
 #define FLOW_NONE	0
 #define FLOW_SOFT	1
@@ -74,7 +74,7 @@ extern struct ios_ops *ios;
 extern int debug;
 extern int opt_force;
 extern int listenonly;
-extern char *answerback;
+extern unsigned char *answerback;
 extern char escape_char;
 
 struct cmd {

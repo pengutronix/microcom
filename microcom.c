@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
 				listenonly = 1;
 				break;
 			case 'a':
-				answerback = optarg;
+				answerback = (unsigned char *) optarg;
 				break;
 			case 'e':
 				if (strlen(optarg) != 1) {
@@ -199,7 +199,7 @@ int main(int argc, char *argv[])
 		main_usage(1, "", "");
 
 	if (answerback) {
-		ret = asprintf(&answerback, "%s\n", answerback);
+		ret = asprintf((char **) &answerback, "%s\n", answerback);
 		if (ret < 0)
 			exit (1);
 	}
