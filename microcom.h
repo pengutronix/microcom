@@ -121,7 +121,7 @@ extern int current_flow;
 int do_commandline(void);
 int do_script(char *script);
 
-#define dbg_printf(fmt,args...)  ({ if (debug) printf(fmt ,##args); })
+#define dbg_printf(...) ({ if (debug) printf(__VA_ARGS__); })
 
 /*
  * Some telnet options according to
