@@ -603,7 +603,7 @@ struct ios_ops *telnet_init(char *hostport)
 			fprintf(stderr, "getnameinfo: %s\n", gai_strerror(ret));
 			goto out;
 		}
-		printf("connected to %s (port %s)\n", connected_host, connected_port);
+		msg_printf("connected to %s (port %s)\n", connected_host, connected_port);
 
 		/* send intent we WILL do COM_PORT stuff */
 		dbg_printf("-> WILL COM_PORT_CONTROL\n");

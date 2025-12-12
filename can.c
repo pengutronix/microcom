@@ -184,8 +184,8 @@ struct ios_ops *can_init(char *interface_id)
 		return NULL;
 	}
 
-	printf("connected to %s (rx_id=%x, tx_id=%x)\n",
-	       interface, filter->can_id, data.can_id);
+	msg_printf("connected to %s (rx_id=%x, tx_id=%x)\n",
+		   interface, filter->can_id, data.can_id);
 
 	return ios;
 }
