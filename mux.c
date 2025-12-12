@@ -53,7 +53,7 @@ static void cook_buf(struct ios_ops *ios, unsigned char *buf, int num)
 {
 	int current = 0;
 
-	while (current < num) {	/* big while loop, to process all the charactes in buffer */
+	while (current < num) { /* big while loop, to process all the charactes in buffer */
 
 		/* look for the next escape character (Ctrl-\) */
 		while ((current < num) && (buf[current] != CTRL(escape_char)))
@@ -62,15 +62,15 @@ static void cook_buf(struct ios_ops *ios, unsigned char *buf, int num)
 		if (current)
 			ios->write(ios, buf, current);
 
-		if (current < num) {	/* process an escape sequence */
+		if (current < num) { /* process an escape sequence */
 			/* found an escape character */
 			do_commandline();
 			return;
-		}		/* if - end of processing escape sequence */
+		}                    /* if - end of processing escape sequence */
 		num -= current;
 		buf += current;
 		current = 0;
-	}			/* while - end of processing all the charactes in the buffer */
+	}                       /* while - end of processing all the charactes in the buffer */
 }
 
 void logfile_close(void)
@@ -102,8 +102,8 @@ int logfile_open(const char *path)
 /* main program loop */
 int mux_loop(struct ios_ops *ios)
 {
-	fd_set ready;		/* used for select */
-	int i = 0, len;		/* used in the multiplex loop */
+	fd_set ready;   /* used for select */
+	int i = 0, len; /* used in the multiplex loop */
 	unsigned char buf[BUFSIZE];
 
 	while (1) {

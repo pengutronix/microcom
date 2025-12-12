@@ -57,7 +57,7 @@ static int parse_line(char *_line, int *argc, char *argv[])
 		*line++ = '\0';         /* terminate current arg         */
 	}
 
-        printf("Too many args (max. %d)\n", MAXARGS);
+	printf("Too many args (max. %d)\n", MAXARGS);
 out:
 	argv[nargs] = NULL;
 	*argc = nargs;
@@ -75,7 +75,7 @@ int register_command(struct cmd *cmd)
 
 	if (!commands) {
 		commands = cmd;
-		return 0;		
+		return 0;
 	}
 
 	tmp = commands;

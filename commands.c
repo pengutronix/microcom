@@ -152,6 +152,7 @@ static int cmd_quit(int argc, char *argv[])
 static int cmd_sendescape(int argc, char *argv[])
 {
 	unsigned char tmp = CTRL(escape_char);
+
 	ios->write(ios, &tmp, 1);
 	return 0;
 }
