@@ -1,0 +1,28 @@
+name: Enforce coding style
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y \
+            uncrustify
+      - name: enforce style using uncrustify
+        # uncrustify cannot output a diff. To make sure this works when
+        # invoking CI locally (i.e. via act) and the worktree is dirty, run
+        # uncrustify in two passes:
+        # 1. check if rules are followed
+        # 2. produce a diff if not
+        run: |
+          uncrustify --check -c uncrustify.cfg *.c *.h ||
+          ( uncrustify -q --replace -c uncrustify.cfg *.c *.h;
+            git diff --exit-code )
