@@ -49,12 +49,12 @@ static void init_comm(struct termios *pts)
 	pts->c_iflag &= ~ICRNL;
 }
 
-static ssize_t serial_write(struct ios_ops *ios, const void *buf, size_t count)
+static ssize_t serial_write(struct ios_ops *ios, const unsigned char *buf, size_t count)
 {
 	return write(ios->fd, buf, count);
 }
 
-static ssize_t serial_read(struct ios_ops *ios, void *buf, size_t count)
+static ssize_t serial_read(struct ios_ops *ios, unsigned char *buf, size_t count)
 {
 	return read(ios->fd, buf, count);
 }

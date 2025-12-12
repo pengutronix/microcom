@@ -40,7 +40,7 @@ struct can_data {
 
 static struct can_data data;
 
-static ssize_t can_write(struct ios_ops *ios, const void *buf, size_t count)
+static ssize_t can_write(struct ios_ops *ios, const unsigned char *buf, size_t count)
 {
 	size_t loopcount;
 	ssize_t ret = 0, err;
@@ -67,7 +67,7 @@ static ssize_t can_write(struct ios_ops *ios, const void *buf, size_t count)
 	return ret;
 }
 
-static ssize_t can_read(struct ios_ops *ios, void *buf, size_t count)
+static ssize_t can_read(struct ios_ops *ios, unsigned char *buf, size_t count)
 {
 	struct can_frame from_can;
 	ssize_t ret;
