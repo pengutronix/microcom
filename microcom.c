@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 		{ "listenonly", no_argument, NULL, 'o'},
 		{ "answerback", required_argument, NULL, 'a'},
 		{ "version", no_argument, NULL, 'v' },
-		{ },
+		{ 0 },
 	};
 
 	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dfl:oi:a:e:v", long_options, NULL)) != -1) {
