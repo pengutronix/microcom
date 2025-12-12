@@ -100,21 +100,10 @@ void commands_fsl_imx_init(void);
 #define ARRAY_SIZE(arr)            (sizeof(arr) / sizeof((arr)[0]))
 
 /*
- * min()/max()/clamp() macros that also do
- * strict type-checking.. See the
- * "unnecessary" pointer comparison.
+ * min()/max() macros without safetys
  */
-#define min(x, y) ({                            \
-        typeof(x) _min1 = (x);                  \
-        typeof(y) _min2 = (y);                  \
-        (void) (&_min1 == &_min2);              \
-        _min1 < _min2 ? _min1 : _min2; })
-
-#define max(x, y) ({                            \
-        typeof(x) _max1 = (x);                  \
-        typeof(y) _max2 = (y);                  \
-        (void) (&_max1 == &_max2);              \
-        _max1 > _max2 ? _max1 : _max2; })
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#define max(a, b) ((a) > (b) ? (a) : (b))
 
 extern unsigned long current_speed;
 extern int current_flow;
