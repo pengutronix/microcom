@@ -512,8 +512,9 @@ static void fsl_sniff_memwrite(void)
 	uint32_t addr, val;
 
 	printf("mw ");
-	for (i = 0; i < 15; i++) {
-		read(ios->fd, &buf[i], 1);
+	if (read(ios->fd, buf, 15) < 15) {
+		printf("read error\n");
+		return;
 	}
 
 	addr = (buf[1] << 24) | (buf[2] << 16) | (buf[3] << 8) | (buf[4] << 0);
@@ -528,7 +529,10 @@ static void fsl_sniff_6(void)
 
 	printf("cmd6\n");
 	for (i = 0; i < 15; i++) {
-		read(ios->fd, &buf[i], 1);
+		if (read(ios->fd, &buf[i], 1) != 1) {
+			printf("read error\n");
+			return;
+		}
 		printf("%02x ", buf[i]);
 	}
 	printf("\n");
@@ -541,7 +545,10 @@ static void fsl_sniff_sts(void)
 
 	printf("cmd get status\n");
 	for (i = 0; i < 15; i++) {
-		read(ios->fd, &buf[i], 1);
+		if (read(ios->fd, &buf[i], 1) != 1) {
+			printf("read error\n");
+			return;
+		}
 		printf("%02x ", buf[i]);
 	}
 	printf("\n");
@@ -560,8 +567,9 @@ static void fsl_sniff_upload(void)
 
 	printf("upload ");
 
-	for (i = 0; i < 15; i++) {
-		read(ios->fd, &buf[i], 1);
+	if (read(ios->fd, buf, 15) < 15) {
+		printf("read error\n");
+		return;
 	}
 	addr = (buf[1] << 24) | (buf[2] << 16) | (buf[3] << 8) | (buf[4] << 0);
 	size = (buf[6] << 24) | (buf[7] << 16) | (buf[8] << 8) | (buf[9] << 0);
@@ -582,7 +590,11 @@ static void fsl_sniff_upload(void)
 
 	for (i = 0; i < size; i++) {
 		unsigned char tmp;
-		read(ios->fd, &tmp, 1);
+
+		if (read(ios->fd, &tmp, 1) != 1) {
+			printf("read error\n");
+			return;
+		}
 		printf("%02x ", tmp);
 		if (!((i + 1) % 32))
 			printf("\n");
@@ -594,7 +606,10 @@ static int fsl_sniff(int argc, char *argv[])
 {
 	while (1) {
 		unsigned char cmd;
-		read(ios->fd, &cmd, 1);
+		if (read(ios->fd, &cmd, 1) != 1) {
+			printf("read error\n");
+			return 1;
+		}
 		switch (cmd) {
 		case 0x2:
 			fsl_sniff_memwrite();
