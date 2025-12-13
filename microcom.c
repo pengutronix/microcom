@@ -37,6 +37,12 @@ static struct termios sots;	/* old stdout/in termios settings to restore */
 struct ios_ops *ios;
 int debug;
 
+int opt_force = 0;
+unsigned long current_speed = DEFAULT_BAUDRATE;
+int current_flow = FLOW_NONE;
+int listenonly = 0;
+char escape_char = DEFAULT_ESCAPE_CHAR;
+
 void init_terminal(void)
 {
 	struct termios sts;
@@ -69,9 +75,8 @@ void microcom_exit(int signal)
 	printf("exiting\n");
 
 	ios->exit(ios);
-	tcsetattr(STDIN_FILENO, TCSANOW, &sots);
-
-	exit(0);
+	if (listenonly)
+		tcsetattr(STDIN_FILENO, TCSANOW, &sots);
 }
 
 /********************************************************************
@@ -112,12 +117,6 @@ void main_usage(int exitcode, char *str, char *dev)
 	fprintf(stderr, "Exitcode %d - %s %s\n\n", exitcode, str, dev);
 	exit(exitcode);
 }
-
-int opt_force = 0;
-unsigned long current_speed = DEFAULT_BAUDRATE;
-int current_flow = FLOW_NONE;
-int listenonly = 0;
-char escape_char = DEFAULT_ESCAPE_CHAR;
 
 int main(int argc, char *argv[])
 {
@@ -233,7 +232,7 @@ int main(int argc, char *argv[])
 
 	ret = ios->set_speed(ios, current_speed);
 	if (ret)
-		goto cleanup_ios;
+		exit(1);
 
 	current_flow = FLOW_NONE;
 	ios->set_flow(ios, current_flow);
@@ -243,27 +242,21 @@ int main(int argc, char *argv[])
 		printf("Type the escape character to get to the prompt.\n");
 
 		/* Now deal with the local terminal side */
+		/*  microcom_exit will restore the old termios handler */
 		tcgetattr(STDIN_FILENO, &sots);
 		init_terminal();
-
-		/* set the signal handler to restore the old
-		 * termios handler */
-		sact.sa_handler = &microcom_exit;
-		sigaction(SIGHUP, &sact, NULL);
-		sigaction(SIGINT, &sact, NULL);
-		sigaction(SIGPIPE, &sact, NULL);
-		sigaction(SIGTERM, &sact, NULL);
-		sigaction(SIGQUIT, &sact, NULL);
 	}
+
+	sact.sa_handler = &microcom_exit;
+
+	sigaction(SIGHUP, &sact, NULL);
+	sigaction(SIGINT, &sact, NULL);
+	sigaction(SIGPIPE, &sact, NULL);
+	sigaction(SIGTERM, &sact, NULL);
+	sigaction(SIGQUIT, &sact, NULL);
 
 	/* run the main program loop */
 	ret = mux_loop(ios);
-
-	if (!listenonly)
-		tcsetattr(STDIN_FILENO, TCSANOW, &sots);
-
-cleanup_ios:
-	ios->exit(ios);
 
 	exit(ret ? 1 : 0);
 }
