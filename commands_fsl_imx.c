@@ -508,7 +508,6 @@ static int fsl_connect(int argc, char *argv[])
 static void fsl_sniff_memwrite(void)
 {
 	unsigned char buf[15];
-	int i;
 	uint32_t addr, val;
 
 	printf("mw ");
