@@ -26,12 +26,18 @@ jobs:
         run: autoreconf -i
 
       - name: Prepare (configure)
+        env:
+          CFLAGS: "-g -O2 -Wpedantic -Werror -Wno-error=unused-result -fsanitize=address,undefined -fno-omit-frame-pointer"
+          LDFLAGS: "-fsanitize=address,undefined"
         run: ./configure
 
       - name: Build
         run: make
 
       - name: Run pytest
+        env:
+          ASAN_OPTIONS: "detect_leaks=1"
+          UBSAN_OPTIONS: "print_stacktrace=1"
         run: pytest -v
 
       - name: Run check
