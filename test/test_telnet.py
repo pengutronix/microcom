@@ -54,7 +54,7 @@ def telnet_recv(cmd):
                 break
         os.close(master_fd)
         proc.wait()
-        assert proc.returncode in (0, 1), f"Exit code must be 0 or 1, got {proc.returncode}"
+        assert proc.returncode in (0, 1)
 
         return bytes(output)
     return _recv
