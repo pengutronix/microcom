@@ -12,6 +12,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      C_WARN: "-Wall -Wextra -Wno-error=unused-result -Wno-pointer-sign -Wno-unused-parameter -Wno-sign-compare"
     steps:
       - uses: actions/checkout@v3
 
@@ -28,12 +30,18 @@ jobs:
         run: autoreconf -i
 
       - name: Prepare (configure)
+        env:
+          CFLAGS: "-g -O2 -fsanitize=address,undefined -fno-omit-frame-pointer -Werror ${{ env.C_WARN }}"
+          LDFLAGS: "-fsanitize=address,undefined"
         run: ./configure
 
       - name: Build
         run: make
 
       - name: Run pytest
+        env:
+          ASAN_OPTIONS: "detect_leaks=1"
+          UBSAN_OPTIONS: "print_stacktrace=1"
         run: pytest -v
 
       - name: Run check
