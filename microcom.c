@@ -17,7 +17,7 @@
 static struct termios sots; /* old stdout/in termios settings to restore */
 
 struct ios_ops *ios;
-int debug;
+int debug = 0;
 
 void init_terminal(void)
 {
