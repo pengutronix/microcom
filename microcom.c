@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 
 #include "config.h"
+#include "compat.h"
 
 static struct termios sots;	/* old stdout/in termios settings to restore */
 
