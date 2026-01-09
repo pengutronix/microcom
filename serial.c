@@ -267,7 +267,7 @@ struct ios_ops * serial_init(char *device)
 	memcpy(&pots, &pts, sizeof (pots));
 	init_comm(&pts);
 	tcsetattr(fd, TCSANOW, &pts);
-	printf("connected to %s\n", device);
+	msg_printf("connected to %s\n", device);
 
 	return ops;
 }

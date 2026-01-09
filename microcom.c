@@ -37,6 +37,7 @@ static struct termios sots;	/* old stdout/in termios settings to restore */
 
 struct ios_ops *ios;
 int debug;
+int quiet;
 
 void init_terminal(void)
 {
@@ -99,6 +100,7 @@ void main_usage(int exitcode, char *str, char *dev)
 		"                                         default: (%s:%x:%x)\n"
 		"    -f, --force                          ignore existing lock file\n"
 		"    -d, --debug                          output debugging info\n"
+		"    -q, --quiet                          do not print status information to stdout\n"
 		"    -l, --logfile=<logfile>              log output to <logfile>\n"
 		"    -o, --listenonly                     Do not modify local terminal, do not send input\n"
 		"                                         from stdin\n"
@@ -137,6 +139,7 @@ int main(int argc, char *argv[])
 		{ "telnet", required_argument, NULL, 't'},
 		{ "can", required_argument, NULL, 'c'},
 		{ "debug", no_argument, NULL, 'd' },
+		{ "quiet", no_argument, NULL, 'q' },
 		{ "force", no_argument, NULL, 'f' },
 		{ "logfile", required_argument, NULL, 'l'},
 		{ "listenonly", no_argument, NULL, 'o'},
@@ -145,54 +148,57 @@ int main(int argc, char *argv[])
 		{ },
 	};
 
-	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dfl:oi:a:e:v", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dqfl:oi:a:e:v", long_options, NULL)) != -1) {
 		switch (opt) {
-			case '?':
-				main_usage(1, "", "");
-				break;
-			case 'h':
-				main_usage(0, "", "");
-				break;
-			case 'v':
-				printf("%s\n", PACKAGE_VERSION);
-				exit(EXIT_SUCCESS);
-				break;
-			case 'p':
-				device = optarg;
-				break;
-			case 's':
-				current_speed = strtoul(optarg, NULL, 0);
-				break;
-			case 't':
-				telnet = 1;
-				hostport = optarg;
-				break;
-			case 'c':
-				can = 1;
-				interfaceid = optarg;
-				break;
-			case 'f':
-				opt_force = 1;
-				break;
-			case 'd':
-				debug = 1;
-				break;
-			case 'l':
-				logfile = optarg;
-				break;
-			case 'o':
-				listenonly = 1;
-				break;
-			case 'a':
-				answerback = optarg;
-				break;
-			case 'e':
-				if (strlen(optarg) != 1) {
-					fprintf(stderr, "Option -e requires a single character argument.\n");
-					exit(EXIT_FAILURE);
-				}
-				escape_char = *optarg;
-				break;
+		case '?':
+			main_usage(1, "", "");
+			break;
+		case 'h':
+			main_usage(0, "", "");
+			break;
+		case 'v':
+			printf("%s\n", PACKAGE_VERSION);
+			exit(EXIT_SUCCESS);
+			break;
+		case 'p':
+			device = optarg;
+			break;
+		case 's':
+			current_speed = strtoul(optarg, NULL, 0);
+			break;
+		case 't':
+			telnet = 1;
+			hostport = optarg;
+			break;
+		case 'c':
+			can = 1;
+			interfaceid = optarg;
+			break;
+		case 'f':
+			opt_force = 1;
+			break;
+		case 'd':
+			debug = 1;
+			break;
+		case 'q':
+			quiet = 1;
+			break;
+		case 'l':
+			logfile = optarg;
+			break;
+		case 'o':
+			listenonly = 1;
+			break;
+		case 'a':
+			answerback = optarg;
+			break;
+		case 'e':
+			if (strlen(optarg) != 1) {
+				fprintf(stderr, "Option -e requires a single character argument.\n");
+				exit(EXIT_FAILURE);
+			}
+			escape_char = *optarg;
+			break;
 		}
 	}
 
@@ -240,8 +246,8 @@ int main(int argc, char *argv[])
 	ios->set_flow(ios, current_flow);
 
 	if (!listenonly) {
-		printf("Escape character: Ctrl-%c\n", escape_char);
-		printf("Type the escape character to get to the prompt.\n");
+		msg_printf("Escape character: Ctrl-%c\n", escape_char);
+		msg_printf("Type the escape character to get to the prompt.\n");
 
 		/* Now deal with the local terminal side */
 		tcgetattr(STDIN_FILENO, &sots);

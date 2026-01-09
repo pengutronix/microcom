@@ -72,6 +72,7 @@ void main_usage(int exitcode, char *str, char *dev);
 
 extern struct ios_ops *ios;
 extern int debug;
+extern int quiet;
 extern int opt_force;
 extern int listenonly;
 extern char *answerback;
@@ -121,7 +122,8 @@ extern int current_flow;
 int do_commandline(void);
 int do_script(char *script);
 
-#define dbg_printf(fmt,args...)  ({ if (debug) printf(fmt ,##args); })
+#define dbg_printf(...) do { if (debug) printf(__VA_ARGS__); } while (0)
+#define msg_printf(...) do { if (!quiet) printf(__VA_ARGS__); } while (0)
 
 /*
  * Some telnet options according to
