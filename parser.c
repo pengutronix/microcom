@@ -1,11 +1,5 @@
-/*
- * Copyright (C) 2010 Sascha Hauer <s.hauer@pengutronix.de>
- *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- */
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2010 Sascha Hauer <s.hauer@pengutronix.de>
 #include "config.h"
 
 #include <stdio.h>
@@ -63,7 +57,7 @@ static int parse_line(char *_line, int *argc, char *argv[])
 		*line++ = '\0';         /* terminate current arg         */
 	}
 
-        printf("Too many args (max. %d)\n", MAXARGS);
+	printf("Too many args (max. %d)\n", MAXARGS);
 out:
 	argv[nargs] = NULL;
 	*argc = nargs;
@@ -81,7 +75,7 @@ int register_command(struct cmd *cmd)
 
 	if (!commands) {
 		commands = cmd;
-		return 0;		
+		return 0;
 	}
 
 	tmp = commands;

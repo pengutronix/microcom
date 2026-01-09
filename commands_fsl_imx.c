@@ -1,11 +1,5 @@
-/*
- * Copyright (C) 2010 Sascha Hauer <s.hauer@pengutronix.de>
- *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- */
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2010 Sascha Hauer <s.hauer@pengutronix.de>
 #include "config.h"
 
 #include <stdio.h>
@@ -51,7 +45,7 @@ static int get_ack(int fd)
 			return -1;
 		}
 		if (r != expect[i])
-			return -1;;
+			return -1;
 	}
 
 	return 0;
@@ -85,11 +79,11 @@ static int sync_com(int fd)
 
 static int read_mem(int fd, uint32_t address, void *_buf, int size, int accesssize)
 {
-	unsigned char buf[] = {0x1, 0x1,			/* read command */
-				0x0, 0x0, 0x0, 0x0,		/* address */
-				0x20,				/* data size */
-				0x0, 0x0, 0x0, 0x0,		/* count */
-				0x0, 0x0, 0x0, 0x0, 0x0};	/* fill */
+	unsigned char buf[] = { 0x1, 0x1,                        /* read command */
+				0x0, 0x0, 0x0, 0x0,              /* address */
+				0x20,                            /* data size */
+				0x0, 0x0, 0x0, 0x0,              /* count */
+				0x0, 0x0, 0x0, 0x0, 0x0 };       /* fill */
 	int i = 0, ret;
 	uint8_t *buf8 = _buf;
 	uint16_t *buf16 = _buf;
@@ -194,11 +188,11 @@ static int memory_display(char *addr, unsigned long offs, unsigned long nbytes, 
 	 * once, and all accesses are with the specified bus width.
 	 */
 	do {
-		char	linebuf[DISP_LINE_LEN];
-		uint	*uip = (uint   *)linebuf;
-		ushort	*usp = (ushort *)linebuf;
-		u_char	*ucp = (u_char *)linebuf;
-		uint	count = 52;
+		char linebuf[DISP_LINE_LEN];
+		uint   *uip = (uint   *)linebuf;
+		ushort *usp = (ushort *)linebuf;
+		u_char *ucp = (u_char *)linebuf;
+		uint count = 52;
 
 		printf("%08lx:", offs);
 		linebytes = (nbytes > DISP_LINE_LEN) ? DISP_LINE_LEN : nbytes;
@@ -215,7 +209,7 @@ static int memory_display(char *addr, unsigned long offs, unsigned long nbytes, 
 			offs += size;
 		}
 
-		while(count--)
+		while (count--)
 			printf(" ");
 
 		cp = (unsigned char *)linebuf;
@@ -261,14 +255,14 @@ out:
 
 static int write_mem(uint32_t address, uint32_t val, int accesssize)
 {
-	unsigned char buf[] = { 0x2, 0x2,	/* write command */
-		0x0, 0x0, 0x0, 0x0,		/* address */
-		0x0,				/* data size */
-		0x0, 0x0, 0x0, 0x0,		/* fill */
-		0x0, 0x0, 0x0, 0x0,		/* value */
-		0x0,				/* fill */
+	unsigned char buf[] = { 0x2, 0x2,           /* write command */
+				0x0, 0x0, 0x0, 0x0, /* address */
+				0x0,                /* data size */
+				0x0, 0x0, 0x0, 0x0, /* fill */
+				0x0, 0x0, 0x0, 0x0, /* value */
+				0x0,                /* fill */
 	};
-	unsigned char expect[] = {0x12, 0x8a, 0x8a, 0x12};
+	unsigned char expect[] = { 0x12, 0x8a, 0x8a, 0x12 };
 	int i, ret;
 	unsigned char r;
 
@@ -317,7 +311,7 @@ static int write_mem(uint32_t address, uint32_t val, int accesssize)
 			return -1;
 		}
 		if (r != expect[i])
-			return -1;;
+			return -1;
 	}
 
 	return 0;
@@ -357,6 +351,7 @@ static int do_header(uint32_t addr)
 		0x0, 0x0, 0x0, 0x0,
 		0x0, 0x0, 0x0, 0x0,
 	};
+
 	buf[0] = (addr >>  0) & 0xff;
 	buf[1] = (addr >>  8) & 0xff;
 	buf[2] = (addr >> 16) & 0xff;
@@ -377,12 +372,12 @@ static int upload_file(uint32_t address, char *name, unsigned char type)
 {
 	uint32_t size;
 	int upfd, ret, i;
-	unsigned char buf[] = { 0x4, 0x4,	/* upload command */
-		0x0, 0x0, 0x0, 0x0,		/* address */
-		0x0,				/* fill */
-		0x0, 0x0, 0x0, 0x0,		/* filesize */
-		0x0, 0x0, 0x0, 0x0,		/* fill */
-		0xaa,				/* filetype */
+	unsigned char buf[] = { 0x4, 0x4,           /* upload command */
+				0x0, 0x0, 0x0, 0x0, /* address */
+				0x0,                /* fill */
+				0x0, 0x0, 0x0, 0x0, /* filesize */
+				0x0, 0x0, 0x0, 0x0, /* fill */
+				0xaa,               /* filetype */
 	};
 	struct stat stat;
 
@@ -458,12 +453,11 @@ out:
 static int upload(int argc, char *argv[])
 {
 	uint32_t address;
-	unsigned char buf[] = { 0x5, 0x5,	/* status command */
-		0x0, 0x0, 0x0, 0x0,
-		0x0, 0x0, 0x0, 0x0,
-		0x0, 0x0, 0x0, 0x0,
-		0x0, 0x0,
-	};
+	unsigned char buf[] = { 0x5, 0x5,           /* status command */
+				0x0, 0x0, 0x0, 0x0,
+				0x0, 0x0, 0x0, 0x0,
+				0x0, 0x0, 0x0, 0x0,
+				0x0, 0x0, };
 	int i, ret, type = 0;
 
 	if (argc < 3)
@@ -508,16 +502,16 @@ static int fsl_connect(int argc, char *argv[])
 static void fsl_sniff_memwrite(void)
 {
 	unsigned char buf[15];
-	int i;
 	uint32_t addr, val;
 
 	printf("mw ");
-	for (i = 0; i < 15; i++) {
-		read(ios->fd, &buf[i], 1);
+	if (read(ios->fd, buf, 15) < 15) {
+		printf("read error\n");
+		return;
 	}
 
 	addr = (buf[1] << 24) | (buf[2] << 16) | (buf[3] << 8) | (buf[4] << 0);
-	val = (buf[10] << 24)| (buf[11] << 16) | (buf[12] << 8) | (buf[13] << 0);
+	val = (buf[10] << 24) | (buf[11] << 16) | (buf[12] << 8) | (buf[13] << 0);
 	printf("0x%08x 0x%08x\n", addr, val);
 }
 
@@ -528,7 +522,10 @@ static void fsl_sniff_6(void)
 
 	printf("cmd6\n");
 	for (i = 0; i < 15; i++) {
-		read(ios->fd, &buf[i], 1);
+		if (read(ios->fd, &buf[i], 1) != 1) {
+			printf("read error\n");
+			return;
+		}
 		printf("%02x ", buf[i]);
 	}
 	printf("\n");
@@ -541,7 +538,10 @@ static void fsl_sniff_sts(void)
 
 	printf("cmd get status\n");
 	for (i = 0; i < 15; i++) {
-		read(ios->fd, &buf[i], 1);
+		if (read(ios->fd, &buf[i], 1) != 1) {
+			printf("read error\n");
+			return;
+		}
 		printf("%02x ", buf[i]);
 	}
 	printf("\n");
@@ -560,15 +560,16 @@ static void fsl_sniff_upload(void)
 
 	printf("upload ");
 
-	for (i = 0; i < 15; i++) {
-		read(ios->fd, &buf[i], 1);
+	if (read(ios->fd, buf, 15) < 15) {
+		printf("read error\n");
+		return;
 	}
 	addr = (buf[1] << 24) | (buf[2] << 16) | (buf[3] << 8) | (buf[4] << 0);
 	size = (buf[6] << 24) | (buf[7] << 16) | (buf[8] << 8) | (buf[9] << 0);
 
 	printf(" adr: 0x%08x size: 0x%08x type 0x%02x ", addr, size, buf[14]);
 
-	switch(buf[14]) {
+	switch (buf[14]) {
 	case 0xaa:
 		printf("(application)\n");
 		break;
@@ -582,7 +583,11 @@ static void fsl_sniff_upload(void)
 
 	for (i = 0; i < size; i++) {
 		unsigned char tmp;
-		read(ios->fd, &tmp, 1);
+
+		if (read(ios->fd, &tmp, 1) != 1) {
+			printf("read error\n");
+			return;
+		}
 		printf("%02x ", tmp);
 		if (!((i + 1) % 32))
 			printf("\n");
@@ -594,7 +599,10 @@ static int fsl_sniff(int argc, char *argv[])
 {
 	while (1) {
 		unsigned char cmd;
-		read(ios->fd, &cmd, 1);
+		if (read(ios->fd, &cmd, 1) != 1) {
+			printf("read error\n");
+			return 1;
+		}
 		switch (cmd) {
 		case 0x2:
 			fsl_sniff_memwrite();
@@ -614,7 +622,7 @@ static int fsl_sniff(int argc, char *argv[])
 		default:
 			printf("unknown cmd 0x%02x\n", cmd);
 			break;
-		};
+		}
 	}
 
 	return 0;

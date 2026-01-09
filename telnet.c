@@ -1,20 +1,5 @@
-/******************************************************************
-** File: telnet.c
-** Description: the telnet part for microcom project
-**
-** Copyright (C) 2008, 2009 Sascha Hauer <s.hauer@pengutronix.de>.
-** All rights reserved.
-****************************************************************************
-** This program is free software; you can redistribute it and/or
-** modify it under the terms of the GNU General Public License
-** as published by the Free Software Foundation; either version 2
-** of the License, or (at your option) any later version.
-**
-** This program is distributed in the hope that it will be useful,
-** but WITHOUT ANY WARRANTY; without even the implied warranty of
-** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-** GNU General Public License for more details at www.gnu.org
-****************************************************************************/
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2008, 2009 Sascha Hauer <s.hauer@pengutronix.de>
 #include "config.h"
 
 #include <stdlib.h>
@@ -145,18 +130,18 @@ static int do_com_port_option(struct ios_ops *ios, unsigned char *buf, int len)
 		dbg_printf("PURGE_DATA_CS ");
 		break;
 	case SET_BAUDRATE_SC:
-		{
-			uint32_t baudrate;
-			ssize_t getres = getl(buf + 2, &baudrate, len - 2);
+	{
+		uint32_t baudrate;
+		ssize_t getres = getl(buf + 2, &baudrate, len - 2);
 
-			if (getres < 0) {
-				fprintf(stderr, "Incomplete or broken SB (SET_BAUDRATE_SC)\n");
-				return getres;
-			}
-			dbg_printf("SET_BAUDRATE_SC %u ", baudrate);
-			i += getres;;
+		if (getres < 0) {
+			fprintf(stderr, "Incomplete or broken SB (SET_BAUDRATE_SC)\n");
+			return getres;
 		}
-		break;
+		dbg_printf("SET_BAUDRATE_SC %u ", baudrate);
+		i += getres;;
+	}
+	break;
 	case SET_DATASIZE_SC:
 		dbg_printf("SET_DATASIZE_SC ");
 		break;
@@ -167,35 +152,35 @@ static int do_com_port_option(struct ios_ops *ios, unsigned char *buf, int len)
 		dbg_printf("SET_STOPSIZE_SC ");
 		break;
 	case SET_CONTROL_SC:
-		{
-			unsigned char ctrl;
-			ssize_t getres = get(buf + 2, &ctrl, len - 2);
+	{
+		unsigned char ctrl;
+		ssize_t getres = get(buf + 2, &ctrl, len - 2);
 
-			if (getres < 0) {
-				fprintf(stderr, "Incomplete or broken SB (SET_CONTROL_SC)\n");
-				return getres;
-			}
-
-			dbg_printf("SET_CONTROL_SC 0x%02x ", ctrl);
-			i += getres;
+		if (getres < 0) {
+			fprintf(stderr, "Incomplete or broken SB (SET_CONTROL_SC)\n");
+			return getres;
 		}
-		break;
+
+		dbg_printf("SET_CONTROL_SC 0x%02x ", ctrl);
+		i += getres;
+	}
+	break;
 	case NOTIFY_LINESTATE_SC:
 		dbg_printf("NOTIFY_LINESTATE_SC ");
 		break;
 	case NOTIFY_MODEMSTATE_SC:
-		{
-			unsigned char ms;
-			ssize_t getres = get(buf + 2, &ms, len - 2);
+	{
+		unsigned char ms;
+		ssize_t getres = get(buf + 2, &ms, len - 2);
 
-			if (getres < 0) {
-				fprintf(stderr, "Incomplete or broken SB (NOTIFY_MODEMSTATE_SC)\n");
-				return getres;
-			}
-
-			dbg_printf("NOTIFY_MODEMSTATE_SC 0x%02x ", ms);
-			i += getres;
+		if (getres < 0) {
+			fprintf(stderr, "Incomplete or broken SB (NOTIFY_MODEMSTATE_SC)\n");
+			return getres;
 		}
+
+		dbg_printf("NOTIFY_MODEMSTATE_SC 0x%02x ", ms);
+		i += getres;
+	}
 	case FLOWCONTROL_SUSPEND_SC:
 		dbg_printf("FLOWCONTROL_SUSPEND_SC ");
 		break;
@@ -218,10 +203,10 @@ static int do_com_port_option(struct ios_ops *ios, unsigned char *buf, int len)
 
 	while (i < len) {
 		if (buf[i] == IAC) {
-			if (i + 1 < len && buf[i+1] == IAC) {
+			if (i + 1 < len && buf[i + 1] == IAC) {
 				/* quoted IAC -> unquote */
 				++i;
-			} else if (i + 1 < len && buf[i+1] == SE) {
+			} else if (i + 1 < len && buf[i + 1] == SE) {
 				dbg_printf("IAC SE\n");
 				return i + 2;
 			}
@@ -249,7 +234,7 @@ struct telnet_option {
 	bool sent_will;
 };
 
-#define TELNET_OPTION(x)	.id = TELNET_OPTION_ ## x, .name = #x
+#define TELNET_OPTION(x)        .id = TELNET_OPTION_ ## x, .name = #x
 
 static const struct telnet_option telnet_options[] = {
 	{
@@ -398,11 +383,11 @@ static int handle_command(struct ios_ops *ios, unsigned char *buf, int len)
 	}
 }
 
-static ssize_t telnet_write(struct ios_ops *ios, const void *buf, size_t count)
+static ssize_t telnet_write(struct ios_ops *ios, const unsigned char *buf, size_t count)
 {
 	size_t handled = 0;
 	ssize_t ret;
-	void *iac;
+	unsigned char *iac;
 
 	/*
 	 * To send an IAC character in the data stream, two IACs must be sent.
@@ -429,11 +414,13 @@ static ssize_t telnet_write(struct ios_ops *ios, const void *buf, size_t count)
 	return ret + handled;
 }
 
-static ssize_t telnet_read(struct ios_ops *ios, void *buf, size_t count)
+static ssize_t telnet_read(struct ios_ops *ios, unsigned char *buf, size_t count)
 {
-	ssize_t ret = read(ios->fd, buf, count);
-	void *iac;
+	ssize_t ret;
+	unsigned char *iac;
 	size_t handled = 0;
+
+	ret = read(ios->fd, buf, count);
 
 	if (ret <= 0)
 		return ret;
@@ -467,7 +454,7 @@ static ssize_t telnet_read(struct ios_ops *ios, void *buf, size_t count)
 
 static int telnet_set_speed(struct ios_ops *ios, unsigned long speed)
 {
-	unsigned char buf2[14] = {IAC, SB, TELNET_OPTION_COM_PORT_CONTROL, SET_BAUDRATE_CS};
+	unsigned char buf2[14] = { IAC, SB, TELNET_OPTION_COM_PORT_CONTROL, SET_BAUDRATE_CS };
 	size_t offset = 4;
 	int i;
 
@@ -488,7 +475,7 @@ static int telnet_set_speed(struct ios_ops *ios, unsigned long speed)
 
 static int telnet_set_flow(struct ios_ops *ios, int flow)
 {
-	unsigned char buf2[] = {IAC, SB, TELNET_OPTION_COM_PORT_CONTROL, SET_CONTROL_CS, 0, IAC, SE};
+	unsigned char buf2[] = { IAC, SB, TELNET_OPTION_COM_PORT_CONTROL, SET_CONTROL_CS, 0, IAC, SE };
 
 	switch (flow) {
 	case FLOW_NONE:
@@ -513,7 +500,7 @@ static int telnet_set_flow(struct ios_ops *ios, int flow)
 
 static int telnet_send_break(struct ios_ops *ios)
 {
-	unsigned char buf2[] = {IAC, BREAK};
+	unsigned char buf2[] = { IAC, BREAK };
 
 	write(ios->fd, buf2, sizeof(buf2));
 
