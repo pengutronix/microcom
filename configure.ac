@@ -4,7 +4,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([dist-xz])
 
 AC_PREREQ([2.69])
-AC_CONFIG_SRCDIR([commands_fsl_imx.c])
+AC_CONFIG_SRCDIR([microcom.c])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
