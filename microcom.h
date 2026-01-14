@@ -96,7 +96,6 @@ extern struct cmd *commands;
 #define for_each_command(cmd) for (cmd = commands; cmd; cmd = cmd->next)
 
 void commands_init(void);
-void commands_fsl_imx_init(void);
 #define ARRAY_SIZE(arr)            (sizeof(arr) / sizeof((arr)[0]))
 
 /*
