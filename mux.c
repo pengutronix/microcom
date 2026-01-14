@@ -28,10 +28,12 @@ static int handle_receive_buf(struct ios_ops *ios, unsigned char *buf, int len)
 		switch (*buf) {
 		case 5:
 			write_receive_buf(sendbuf, buf - sendbuf);
-			if (answerback)
+			if (answerback) {
 				ios->write(ios, answerback, strlen(answerback));
-			else
+				ios->write(ios, "\n", 1);
+			} else {
 				write_receive_buf(buf, 1);
+			}
 
 			buf += 1;
 			len -= 1;
