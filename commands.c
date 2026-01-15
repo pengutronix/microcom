@@ -1,11 +1,5 @@
-/*
- * Copyright (C) 2010 Sascha Hauer <s.hauer@pengutronix.de>
- *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- */
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2010 Sascha Hauer <s.hauer@pengutronix.de>
 #include "config.h"
 
 #include <stdlib.h>
@@ -158,6 +152,7 @@ static int cmd_quit(int argc, char *argv[])
 static int cmd_sendescape(int argc, char *argv[])
 {
 	unsigned char tmp = CTRL(escape_char);
+
 	ios->write(ios, &tmp, 1);
 	return 0;
 }

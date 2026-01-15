@@ -1,24 +1,5 @@
-/******************************************************************
-** File: microcom.c
-** Description: the main file for microcom project
-**
-** Copyright (C)1999 Anca and Lucian Jurubita <ljurubita@hotmail.com>.
-** All rights reserved.
-****************************************************************************
-** This program is free software; you can redistribute it and/or
-** modify it under the terms of the GNU General Public License
-** as published by the Free Software Foundation; either version 2
-** of the License, or (at your option) any later version.
-**
-** This program is distributed in the hope that it will be useful,
-** but WITHOUT ANY WARRANTY; without even the implied warranty of
-** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-** GNU General Public License for more details at www.gnu.org
-****************************************************************************
-** Rev. 1.0 - Feb. 2000
-** Rev. 1.01 - March 2000
-** Rev. 1.02 - June 2000
-****************************************************************************/
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 1999 Anca and Lucian Jurubita <ljurubita@hotmail.com>.
 #define _GNU_SOURCE
 #include "microcom.h"
 
@@ -33,16 +14,16 @@
 #include "config.h"
 #include "compat.h"
 
-static struct termios sots;	/* old stdout/in termios settings to restore */
+static struct termios sots; /* old stdout/in termios settings to restore */
 
 struct ios_ops *ios;
-int debug;
+int debug = 0;
 
 void init_terminal(void)
 {
 	struct termios sts;
 
-	memcpy(&sts, &sots, sizeof (sots));     /* to be used upon exit */
+	memcpy(&sts, &sots, sizeof(sots)); /* to be used upon exit */
 
 	/* Implement what `stty raw` does. */
 	sts.c_iflag &= ~(IGNBRK | BRKINT | IGNPAR | PARMRK | INPCK |
@@ -76,19 +57,19 @@ void microcom_exit(int signal)
 		_Exit(0);
 }
 
-/********************************************************************
- Main functions
+/*
+ * Main functions
  ********************************************************************
- static void help_usage(int exitcode, char *error, char *addl)
-      help with running the program
-      - exitcode - to be returned when the program is ended
-      - error - error string to be printed
-      - addl - another error string to be printed
- static void cleanup_termios(int signal)
-      signal handler to restore terminal set befor exit
- int main(int argc, char *argv[]) -
-      main program function
-********************************************************************/
+ * static void help_usage(int exitcode, char *error, char *addl)
+ *      help with running the program
+ *      - exitcode - to be returned when the program is ended
+ *      - error - error string to be printed
+ *      - addl - another error string to be printed
+ * static void cleanup_termios(int signal)
+ *      signal handler to restore terminal set befor exit
+ * int main(int argc, char *argv[]) -
+ *      main program function
+ */
 void main_usage(int exitcode, char *str, char *dev)
 {
 	fprintf(stderr, "Usage: microcom [options]\n"
@@ -133,78 +114,72 @@ int main(int argc, char *argv[])
 
 	struct option long_options[] = {
 		{ "help", no_argument, NULL, 'h' },
-		{ "port", required_argument, NULL, 'p'},
-		{ "speed", required_argument, NULL, 's'},
-		{ "telnet", required_argument, NULL, 't'},
-		{ "can", required_argument, NULL, 'c'},
+		{ "port", required_argument, NULL, 'p' },
+		{ "speed", required_argument, NULL, 's' },
+		{ "telnet", required_argument, NULL, 't' },
+		{ "can", required_argument, NULL, 'c' },
 		{ "debug", no_argument, NULL, 'd' },
 		{ "force", no_argument, NULL, 'f' },
-		{ "logfile", required_argument, NULL, 'l'},
-		{ "listenonly", no_argument, NULL, 'o'},
-		{ "answerback", required_argument, NULL, 'a'},
+		{ "logfile", required_argument, NULL, 'l' },
+		{ "listenonly", no_argument, NULL, 'o' },
+		{ "answerback", required_argument, NULL, 'a' },
 		{ "version", no_argument, NULL, 'v' },
-		{ },
+		{ 0 },
 	};
 
 	while ((opt = getopt_long(argc, argv, "hp:s:t:c:dfl:oi:a:e:v", long_options, NULL)) != -1) {
 		switch (opt) {
-			case '?':
-				main_usage(1, "", "");
-				break;
-			case 'h':
-				main_usage(0, "", "");
-				break;
-			case 'v':
-				printf("%s\n", PACKAGE_VERSION);
-				exit(EXIT_SUCCESS);
-				break;
-			case 'p':
-				device = optarg;
-				break;
-			case 's':
-				current_speed = strtoul(optarg, NULL, 0);
-				break;
-			case 't':
-				telnet = 1;
-				hostport = optarg;
-				break;
-			case 'c':
-				can = 1;
-				interfaceid = optarg;
-				break;
-			case 'f':
-				opt_force = 1;
-				break;
-			case 'd':
-				debug = 1;
-				break;
-			case 'l':
-				logfile = optarg;
-				break;
-			case 'o':
-				listenonly = 1;
-				break;
-			case 'a':
-				answerback = optarg;
-				break;
-			case 'e':
-				if (strlen(optarg) != 1) {
-					fprintf(stderr, "Option -e requires a single character argument.\n");
-					exit(EXIT_FAILURE);
-				}
-				escape_char = *optarg;
-				break;
+		case '?':
+			main_usage(1, "", "");
+			break;
+		case 'h':
+			main_usage(0, "", "");
+			break;
+		case 'v':
+			printf("%s\n", PACKAGE_VERSION);
+			exit(EXIT_SUCCESS);
+			break;
+		case 'p':
+			device = optarg;
+			break;
+		case 's':
+			current_speed = strtoul(optarg, NULL, 0);
+			break;
+		case 't':
+			telnet = 1;
+			hostport = optarg;
+			break;
+		case 'c':
+			can = 1;
+			interfaceid = optarg;
+			break;
+		case 'f':
+			opt_force = 1;
+			break;
+		case 'd':
+			debug = 1;
+			break;
+		case 'l':
+			logfile = optarg;
+			break;
+		case 'o':
+			listenonly = 1;
+			break;
+		case 'a':
+			answerback = optarg;
+			break;
+		case 'e':
+			if (strlen(optarg) != 1) {
+				fprintf(stderr, "Option -e requires a single character argument.\n");
+				exit(EXIT_FAILURE);
+			}
+			escape_char = *optarg;
+			break;
 		}
 	}
 
 	if (optind < argc)
 		main_usage(1, "", "");
-
-	if (answerback) {
-		ret = asprintf(&answerback, "%s\n", answerback);
-		if (ret < 0)
-			exit (1);
-	}
 
 	commands_init();
 	commands_fsl_imx_init();

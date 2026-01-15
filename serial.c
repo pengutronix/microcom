@@ -1,24 +1,5 @@
-/******************************************************************
-** File: serial.c
-** Description: the serial part for microcom project
-**
-** Copyright (C)1999 Anca and Lucian Jurubita <ljurubita@hotmail.com>.
-** All rights reserved.
-****************************************************************************
-** This program is free software; you can redistribute it and/or
-** modify it under the terms of the GNU General Public License
-** as published by the Free Software Foundation; either version 2
-** of the License, or (at your option) any later version.
-**
-** This program is distributed in the hope that it will be useful,
-** but WITHOUT ANY WARRANTY; without even the implied warranty of
-** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-** GNU General Public License for more details at www.gnu.org
-****************************************************************************
-** Rev. 1.0 - Feb. 2000
-** Rev. 1.01 - March 2000
-** Rev. 1.02 - June 2000
-****************************************************************************/
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 1999 Anca and Lucian Jurubita <ljurubita@hotmail.com>.
 #include "config.h"
 
 #include <limits.h>
@@ -28,7 +9,7 @@
 
 #include "microcom.h"
 
-static struct termios pots;		/* old port termios settings to restore */
+static struct termios pots; /* old port termios settings to restore */
 
 static void init_comm(struct termios *pts)
 {
@@ -49,12 +30,12 @@ static void init_comm(struct termios *pts)
 	pts->c_iflag &= ~ICRNL;
 }
 
-static ssize_t serial_write(struct ios_ops *ios, const void *buf, size_t count)
+static ssize_t serial_write(struct ios_ops *ios, const unsigned char *buf, size_t count)
 {
 	return write(ios->fd, buf, count);
 }
 
-static ssize_t serial_read(struct ios_ops *ios, void *buf, size_t count)
+static ssize_t serial_read(struct ios_ops *ios, unsigned char *buf, size_t count)
 {
 	return read(ios->fd, buf, count);
 }
@@ -93,51 +74,51 @@ static const struct {
 	{ 200, B200 },
 	{ 300, B300 },
 	{ 600, B600 },
-	{ 1200, B1200},
-	{ 1800, B1800},
-	{ 2400, B2400},
-	{ 4800, B4800},
-	{ 9600, B9600},
-	{ 19200, B19200},
-	{ 38400, B38400},
-	{ 57600, B57600},
-	{ 115200, B115200},
-	{ 230400, B230400},
+	{ 1200, B1200 },
+	{ 1800, B1800 },
+	{ 2400, B2400 },
+	{ 4800, B4800 },
+	{ 9600, B9600 },
+	{ 19200, B19200 },
+	{ 38400, B38400 },
+	{ 57600, B57600 },
+	{ 115200, B115200 },
+	{ 230400, B230400 },
 #ifdef B460800
-	{ 460800, B460800},
+	{ 460800, B460800 },
 #endif
 #ifdef B500000
-	{ 500000, B500000},
+	{ 500000, B500000 },
 #endif
 #ifdef B576000
-	{ 576000, B576000},
+	{ 576000, B576000 },
 #endif
 #ifdef B921600
-	{ 921600, B921600},
+	{ 921600, B921600 },
 #endif
 #ifdef B1000000
-	{ 1000000, B1000000},
+	{ 1000000, B1000000 },
 #endif
 #ifdef B1152000
-	{ 1152000, B1152000},
+	{ 1152000, B1152000 },
 #endif
 #ifdef B1500000
-	{ 1500000, B1500000},
+	{ 1500000, B1500000 },
 #endif
 #ifdef B2000000
-	{ 2000000, B2000000},
+	{ 2000000, B2000000 },
 #endif
 #ifdef B2500000
-	{ 2500000, B2500000},
+	{ 2500000, B2500000 },
 #endif
 #ifdef B3000000
-	{ 3000000, B3000000},
+	{ 3000000, B3000000 },
 #endif
 #ifdef B3500000
-	{ 3500000, B3500000},
+	{ 3500000, B3500000 },
 #endif
 #ifdef B4000000
-	{ 4000000, B4000000},
+	{ 4000000, B4000000 },
 #endif
 };
 
@@ -157,7 +138,7 @@ static int baudrate_to_flag(int speed, speed_t *flag)
 
 static int serial_set_speed(struct ios_ops *ios, unsigned long speed)
 {
-	struct termios pts;	/* termios settings on port */
+	struct termios pts; /* termios settings on port */
 	speed_t flag;
 	int ret;
 
@@ -176,7 +157,8 @@ static int serial_set_speed(struct ios_ops *ios, unsigned long speed)
 
 static int serial_set_flow(struct ios_ops *ios, int flow)
 {
-	struct termios pts;	/* termios settings on port */
+	struct termios pts; /* termios settings on port */
+
 	tcgetattr(ios->fd, &pts);
 
 	switch (flow) {
@@ -229,7 +211,7 @@ static void serial_exit(struct ios_ops *ios)
 
 struct ios_ops * serial_init(char *device)
 {
-	struct termios pts;	/* termios settings on port */
+	struct termios pts; /* termios settings on port */
 	struct ios_ops *ops;
 	int fd, ret;
 
@@ -263,7 +245,7 @@ struct ios_ops * serial_init(char *device)
 
 	/* modify the port configuration */
 	tcgetattr(fd, &pts);
-	memcpy(&pots, &pts, sizeof (pots));
+	memcpy(&pots, &pts, sizeof(pots));
 	init_comm(&pts);
 	tcsetattr(fd, TCSANOW, &pts);
 	printf("connected to %s\n", device);
