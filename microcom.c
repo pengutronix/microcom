@@ -67,12 +67,13 @@ void restore_terminal(void)
 
 void microcom_exit(int signal)
 {
-	printf("exiting\n");
+	write(1, "exiting\n", 8);
 
 	ios->exit(ios);
 	tcsetattr(STDIN_FILENO, TCSANOW, &sots);
 
-	exit(0);
+	if (signal)
+		_Exit(0);
 }
 
 /********************************************************************
@@ -122,7 +123,7 @@ char escape_char = DEFAULT_ESCAPE_CHAR;
 
 int main(int argc, char *argv[])
 {
-	struct sigaction sact;  /* used to initialize the signal handler */
+	struct sigaction sact = {0};  /* used to initialize the signal handler */
 	int opt, ret;
 	char *hostport = NULL;
 	int telnet = 0, can = 0;

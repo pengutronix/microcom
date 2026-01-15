@@ -149,7 +149,9 @@ static int cmd_break(int argc, char *argv[])
 
 static int cmd_quit(int argc, char *argv[])
 {
+	fflush(NULL);
 	microcom_exit(0);
+	exit(0);
 	return 0;
 }
 

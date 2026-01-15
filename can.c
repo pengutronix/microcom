@@ -101,7 +101,6 @@ static int can_send_break(struct ios_ops *ios)
 static void can_exit(struct ios_ops *ios)
 {
 	close(ios->fd);
-	free(ios);
 }
 
 struct ios_ops *can_init(char *interface_id)
