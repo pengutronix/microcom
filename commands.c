@@ -209,7 +209,7 @@ static struct cmd cmds[] = {
 	}, {
 		.name = "exit",
 		.fn = cmd_exit,
-		.info = "exit from command processing",
+		.info = "exit from command processing and return to console",
 	}, {
 		.name = "flow",
 		.fn = cmd_flow,
