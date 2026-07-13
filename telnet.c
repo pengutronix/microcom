@@ -302,7 +302,7 @@ struct ios_ops *telnet_init(char *hostport)
 	char connected_host[256], connected_port[30];
 
 	telnet_ios = calloc(1, sizeof(struct telnet_ios));
-	if (!ios)
+	if (!telnet_ios)
 		return NULL;
 	ios = &telnet_ios->base;
 
