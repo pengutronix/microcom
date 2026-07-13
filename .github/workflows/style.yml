@@ -11,6 +11,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: astral-sh/ruff-action@v3
+
       - name: Install Dependencies
         run: |
           sudo apt update -y
@@ -26,3 +28,7 @@ jobs:
           uncrustify --check -c uncrustify.cfg *.c *.h ||
           ( uncrustify -q --replace -c uncrustify.cfg *.c *.h;
             git diff --exit-code )
+
+      - name: enforce python style using ruff
+        run: |
+          ruff format --check --diff
