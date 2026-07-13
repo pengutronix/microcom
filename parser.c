@@ -171,7 +171,7 @@ int do_commandline(void)
 	int ret;
 
 	restore_terminal();
-	printf("\nEnter command. Try \'help\' for a list of builtin commands\n");
+	printf("\nEnter command (try \'help\'). Press Ctrl+D to return to console.\n");
 
 	do {
 		ret = __do_commandline("-> ");
