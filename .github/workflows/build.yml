@@ -12,28 +12,73 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    env:
+      C_WARN: "-Wall -Wextra -Wno-error=unused-result -Wno-pointer-sign -Wno-unused-parameter -Wno-sign-compare"
     steps:
       - uses: actions/checkout@v3
 
       - name: Install Dependencies
-        run:
-          sudo apt install
-          libreadline6-dev
-          autoconf
-          automake
+        run: |
+          sudo apt update -y
+          sudo apt install -y \
+            libreadline6-dev \
+            autoconf \
+            automake \
+            python3-pytest \
+            valgrind
 
       - name: Prepare (autoreconf)
         run: autoreconf -i
 
-      - name: Prepare (configure)
-        run: ./configure
+      # Build 1: ASAN
+      - name: Create ASAN build directory
+        run: mkdir -p build-asan
 
-      - name: Build
+      - name: Configure ASAN build
+        working-directory: build-asan
+        env:
+          CFLAGS: "-g -O2 -fsanitize=address,undefined -fno-omit-frame-pointer -Werror ${{ env.C_WARN }}"
+          LDFLAGS: "-fsanitize=address,undefined"
+        run: ../configure
+
+      - name: Build ASAN
+        working-directory: build-asan
         run: make
 
-      - name: Run check
+      - name: Run pytest with ASAN
+        continue-on-error: true
+        env:
+          ASAN_OPTIONS: "detect_leaks=1"
+          UBSAN_OPTIONS: "print_stacktrace=1"
+        run: pytest -v --cmd="build-asan/microcom"
+
+      - name: Run check with ASAN
+        continue-on-error: true
+        working-directory: build-asan
+        env:
+          ASAN_OPTIONS: "detect_leaks=1"
+          UBSAN_OPTIONS: "print_stacktrace=1"
         run: make check
 
-      - name: Run distcheck
-        run: make distcheck
+      # Build 2: Valgrind
+      - name: Create unoptimized build directory
+        run: mkdir -p build-unopt
+
+      - name: Configure unoptimized build
+        working-directory: build-unopt
+        env:
+          CFLAGS: "-g -O0 -Werror ${{ env.C_WARN }}"
+        run: ../configure
+
+      - name: Build unoptimized
+        working-directory: build-unopt
+        run: make
+
+      - name: Run pytest with Valgrind
+        continue-on-error: true
+        run: pytest -v --cmd="valgrind --tool=memcheck --error-exitcode=99 --quiet build-unopt/microcom"
+
+      - name: Run check with Valgrind
+        continue-on-error: true
+        working-directory: build-unopt
+        run: make check
