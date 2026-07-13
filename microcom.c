@@ -188,7 +188,6 @@ int main(int argc, char *argv[])
 		main_usage(1, "", "");
 
 	commands_init();
-	commands_fsl_imx_init();
 
 	if (telnet && can)
 		main_usage(1, "", "");
