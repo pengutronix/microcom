@@ -11,4 +11,4 @@ endif
 
 dist_man1_MANS = microcom.1
 
-noinst_HEADERS = microcom.h
+noinst_HEADERS = microcom.h compat.h
