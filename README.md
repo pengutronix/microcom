@@ -81,8 +81,8 @@ changes, add a line like the following:
 Signed-off-by: Random J Developer <random@developer.example.org>
 ```
 
-… containing your real name and e-mail address at the end of the patch
-description (Git can do this for you when you use `git commit -s`).
+… containing a known identity (name and e-mail) at the end of the patch
+description. Git can do this for you when you use `git commit -s`.
 Then send your patches to <oss-tools@pengutronix.de>, or, if you use GitHub,
 open a pull-request on <https://github.com/pengutronix/microcom>.
 If you send patches, please prefix your subject with "[PATCH microcom]" (for
