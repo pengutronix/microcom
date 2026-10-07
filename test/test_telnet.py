@@ -118,6 +118,13 @@ def test_cmd_within_buffer(telnet_recv):
     assert telnet_recv(payload) == expected_output
 
 
+def test_connect_negotiation(telnet_recv):
+    pattern = make_pattern(100)
+    payload = IAC_WILL_COM_PORT_OPT + IAC_DO_COM_PORT_OPT + pattern
+
+    assert telnet_recv(payload) == pattern
+
+
 def test_iac_escape(telnet_recv):
     before_pattern = make_pattern(42)
     after_pattern = make_pattern(42)
@@ -132,5 +139,14 @@ def test_escape_then_cmd(telnet_recv):
     after_pattern = make_pattern(10)
     payload = before_pattern + IAC_IAC + IAC_DONT_COM_PORT_OPT + after_pattern
     expected = before_pattern + IAC + after_pattern
+
+    assert telnet_recv(payload) == expected
+
+
+def test_chained_cmds_split_across_buffers(telnet_recv):
+    before = make_pattern(1022)
+    after = make_pattern(20)
+    payload = before + IAC_DONT_COM_PORT_OPT + IAC_DONT_COM_PORT_OPT + after
+    expected = before + after
 
     assert telnet_recv(payload) == expected
