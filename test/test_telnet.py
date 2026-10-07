@@ -6,7 +6,11 @@ import subprocess
 import os
 import pty
 
-RFC2217_CMD = bytes([255, 254, 44])  # RFC2217 IAC DONT COM-PORT-OPTION
+IAC = bytes([255])
+IAC_IAC = bytes([255, 255])
+IAC_WILL_COM_PORT_OPT = bytes([255, 251, 44])
+IAC_DO_COM_PORT_OPT = bytes([255, 253, 44])
+IAC_DONT_COM_PORT_OPT = bytes([255, 254, 44])
 
 
 def make_pattern(length):
@@ -75,23 +79,40 @@ def test_no_cmd(telnet_recv, length):
 def test_cmd_across_buffers(telnet_recv):
     before_pattern = make_pattern(1023)
     after_pattern = make_pattern(20)
-    payload = before_pattern + RFC2217_CMD + after_pattern
+    payload = before_pattern + IAC_DONT_COM_PORT_OPT + after_pattern
     expected_output = before_pattern + after_pattern
+
+    assert telnet_recv(payload) == expected_output
+
+
+def test_iac_across_buffers(telnet_recv):
+    before_pattern = make_pattern(1023)
+    after_pattern = make_pattern(20)
+    payload = before_pattern + IAC_IAC + after_pattern
+    expected_output = before_pattern + IAC + after_pattern
 
     assert telnet_recv(payload) == expected_output
 
 
 def test_cmd_buffer_end(telnet_recv):
     pattern = make_pattern(1023)
-    payload = pattern + RFC2217_CMD
+    payload = pattern + IAC_DONT_COM_PORT_OPT
 
     assert telnet_recv(payload) == pattern
+
+
+def test_cmd_buffer_start(telnet_recv):
+    before_pattern = make_pattern(1024)
+    after_pattern = make_pattern(20)
+    payload = before_pattern + IAC_DONT_COM_PORT_OPT + after_pattern
+
+    assert telnet_recv(payload) == before_pattern + after_pattern
 
 
 def test_cmd_within_buffer(telnet_recv):
     before_pattern = make_pattern(345)
     after_pattern = make_pattern(890)
-    payload = before_pattern + RFC2217_CMD + after_pattern
+    payload = before_pattern + IAC_DONT_COM_PORT_OPT + after_pattern
     expected_output = before_pattern + after_pattern
 
     assert telnet_recv(payload) == expected_output
@@ -100,7 +121,16 @@ def test_cmd_within_buffer(telnet_recv):
 def test_iac_escape(telnet_recv):
     before_pattern = make_pattern(42)
     after_pattern = make_pattern(42)
-    payload = before_pattern + bytes([255, 255]) + after_pattern
-    expected_output = before_pattern + bytes([255]) + after_pattern
+    payload = before_pattern + IAC_IAC + after_pattern
+    expected_output = before_pattern + IAC + after_pattern
 
     assert telnet_recv(payload) == expected_output
+
+
+def test_escape_then_cmd(telnet_recv):
+    before_pattern = make_pattern(10)
+    after_pattern = make_pattern(10)
+    payload = before_pattern + IAC_IAC + IAC_DONT_COM_PORT_OPT + after_pattern
+    expected = before_pattern + IAC + after_pattern
+
+    assert telnet_recv(payload) == expected
