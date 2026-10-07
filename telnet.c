@@ -56,7 +56,7 @@ static ssize_t telnet_write(struct ios_ops *ios, const unsigned char *buf, size_
 {
 	size_t handled = 0;
 	ssize_t ret;
-	unsigned char *iac;
+	const unsigned char *iac;
 
 	/*
 	 * To send an IAC character in the data stream, two IACs must be sent.
