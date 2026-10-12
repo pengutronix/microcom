@@ -8,6 +8,8 @@ import pty
 
 IAC = bytes([255])
 IAC_IAC = bytes([255, 255])
+IAC_SB = bytes([255, 250])
+IAC_SE = bytes([255, 240])
 IAC_WILL_COM_PORT_OPT = bytes([255, 251, 44])
 IAC_DO_COM_PORT_OPT = bytes([255, 253, 44])
 IAC_DONT_COM_PORT_OPT = bytes([255, 254, 44])
@@ -150,3 +152,20 @@ def test_chained_cmds_split_across_buffers(telnet_recv):
     expected = before + after
 
     assert telnet_recv(payload) == expected
+
+
+def test_subneg(telnet_recv):
+    before_pattern = make_pattern(1022)
+    after_pattern = make_pattern(20)
+    payload = before_pattern + IAC_SB + make_pattern(10) + IAC_SE + after_pattern
+
+    assert telnet_recv(payload) == before_pattern + after_pattern
+
+
+def test_subneg_escaped(telnet_recv):
+    before = b"before"
+    after = b"after"
+    # This is not supposed to terminate the subneg: IAC, IAC, SE, !
+    payload = before + IAC_SB + bytes([255, 255, 240, 33]) + IAC_SE + after
+
+    assert telnet_recv(payload) == before + after

@@ -199,7 +199,7 @@ static ssize_t handle_iac(struct ios_ops *ios, unsigned char *buf, ssize_t buf_l
 				}
 			} else if (priv->iac_buf_len == 3 && buf[consumed] == SE) {
 				priv->iac_buf_len = 0;
-				return consumed;
+				return consumed + 1;
 			}
 		}
 		return consumed;
