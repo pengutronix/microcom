@@ -239,6 +239,12 @@ static ssize_t telnet_read(struct ios_ops *ios, unsigned char *buf, size_t count
 			break;
 		handled = iac - buf;
 	}
+
+	if (ret == 0) {
+		/* read() yielded bytes but all were telnet commands, do not return 0 (EOF)! */
+		errno = EAGAIN;
+		return -1;
+	}
 	return ret;
 }
 

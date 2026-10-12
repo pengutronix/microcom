@@ -169,3 +169,10 @@ def test_subneg_escaped(telnet_recv):
     payload = before + IAC_SB + bytes([255, 255, 240, 33]) + IAC_SE + after
 
     assert telnet_recv(payload) == before + after
+
+
+def test_only_commands(telnet_recv):
+    after_pattern = make_pattern(20)
+    payload = IAC_SB + make_pattern(1022) + IAC_SE + after_pattern
+
+    assert telnet_recv(payload) == after_pattern
