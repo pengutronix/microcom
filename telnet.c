@@ -179,7 +179,6 @@ static ssize_t handle_iac(struct ios_ops *ios, unsigned char *buf, ssize_t buf_l
 		telnet_handle_triplet(priv->iac_buf[1], buf[consumed]);
 		priv->iac_buf_len = 0;
 		return consumed + 1;
-		consumed++;
 	} else if (priv->iac_buf[1] == SB) {
 		/* we're within a subneg, skip until IAC,SE that isn't preceeded by another IAC */
 		/* TODO: handle subneg content */
