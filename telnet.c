@@ -188,19 +188,16 @@ static ssize_t handle_iac(struct ios_ops *ios, unsigned char *buf, ssize_t buf_l
 		/* we're within a subneg, skip until IAC,SE that isn't preceeded by another IAC */
 		/* TODO: handle subneg content */
 		for (; consumed < buf_len; consumed++) {
-			if (buf[consumed] == IAC) {
-				if (priv->iac_buf_len == 2) {
-					priv->iac_buf[2] = buf[consumed];
-					priv->iac_buf_len++;
-				} else {
-					assert(priv->iac_buf[2] == IAC);
-					assert(priv->iac_buf_len == 3);
-					priv->iac_buf_len--;
-				}
-			} else if (priv->iac_buf_len == 3 && buf[consumed] == SE) {
+			if (priv->iac_buf_len == 2 && buf[consumed] == IAC) {
+				priv->iac_buf[2] = buf[consumed];
+				priv->iac_buf_len++;
+				continue;
+			}
+			if (priv->iac_buf_len == 3 && buf[consumed] == SE) {
 				priv->iac_buf_len = 0;
 				return consumed + 1;
 			}
+			priv->iac_buf_len = 2;
 		}
 		return consumed;
 	}

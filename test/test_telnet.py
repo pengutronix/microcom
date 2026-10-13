@@ -176,3 +176,12 @@ def test_only_commands(telnet_recv):
     payload = IAC_SB + make_pattern(1022) + IAC_SE + after_pattern
 
     assert telnet_recv(payload) == after_pattern
+
+
+def test_subneg_special(telnet_recv):
+    before = b"before"
+    after = b"after"
+    # This is not supposed to terminate the subneg: IAC, 243, SE, !
+    payload = before + IAC_SB + bytes([255, 243, 240, 33]) + IAC_SE + after
+
+    assert telnet_recv(payload) == before + after
