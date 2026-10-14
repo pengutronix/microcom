@@ -6,7 +6,13 @@ import subprocess
 import os
 import pty
 
-RFC2217_CMD = bytes([255, 254, 44])  # RFC2217 IAC DONT COM-PORT-OPTION
+IAC = bytes([255])
+IAC_IAC = bytes([255, 255])
+IAC_SB = bytes([255, 250])
+IAC_SE = bytes([255, 240])
+IAC_WILL_COM_PORT_OPT = bytes([255, 251, 44])
+IAC_DO_COM_PORT_OPT = bytes([255, 253, 44])
+IAC_DONT_COM_PORT_OPT = bytes([255, 254, 44])
 
 
 def make_pattern(length):
@@ -75,32 +81,107 @@ def test_no_cmd(telnet_recv, length):
 def test_cmd_across_buffers(telnet_recv):
     before_pattern = make_pattern(1023)
     after_pattern = make_pattern(20)
-    payload = before_pattern + RFC2217_CMD + after_pattern
+    payload = before_pattern + IAC_DONT_COM_PORT_OPT + after_pattern
     expected_output = before_pattern + after_pattern
+
+    assert telnet_recv(payload) == expected_output
+
+
+def test_iac_across_buffers(telnet_recv):
+    before_pattern = make_pattern(1023)
+    after_pattern = make_pattern(20)
+    payload = before_pattern + IAC_IAC + after_pattern
+    expected_output = before_pattern + IAC + after_pattern
 
     assert telnet_recv(payload) == expected_output
 
 
 def test_cmd_buffer_end(telnet_recv):
     pattern = make_pattern(1023)
-    payload = pattern + RFC2217_CMD
+    payload = pattern + IAC_DONT_COM_PORT_OPT
 
     assert telnet_recv(payload) == pattern
+
+
+def test_cmd_buffer_start(telnet_recv):
+    before_pattern = make_pattern(1024)
+    after_pattern = make_pattern(20)
+    payload = before_pattern + IAC_DONT_COM_PORT_OPT + after_pattern
+
+    assert telnet_recv(payload) == before_pattern + after_pattern
 
 
 def test_cmd_within_buffer(telnet_recv):
     before_pattern = make_pattern(345)
     after_pattern = make_pattern(890)
-    payload = before_pattern + RFC2217_CMD + after_pattern
+    payload = before_pattern + IAC_DONT_COM_PORT_OPT + after_pattern
     expected_output = before_pattern + after_pattern
 
     assert telnet_recv(payload) == expected_output
 
 
+def test_connect_negotiation(telnet_recv):
+    pattern = make_pattern(100)
+    payload = IAC_WILL_COM_PORT_OPT + IAC_DO_COM_PORT_OPT + pattern
+
+    assert telnet_recv(payload) == pattern
+
+
 def test_iac_escape(telnet_recv):
     before_pattern = make_pattern(42)
     after_pattern = make_pattern(42)
-    payload = before_pattern + bytes([255, 255]) + after_pattern
-    expected_output = before_pattern + bytes([255]) + after_pattern
+    payload = before_pattern + IAC_IAC + after_pattern
+    expected_output = before_pattern + IAC + after_pattern
 
     assert telnet_recv(payload) == expected_output
+
+
+def test_escape_then_cmd(telnet_recv):
+    before_pattern = make_pattern(10)
+    after_pattern = make_pattern(10)
+    payload = before_pattern + IAC_IAC + IAC_DONT_COM_PORT_OPT + after_pattern
+    expected = before_pattern + IAC + after_pattern
+
+    assert telnet_recv(payload) == expected
+
+
+def test_chained_cmds_split_across_buffers(telnet_recv):
+    before = make_pattern(1022)
+    after = make_pattern(20)
+    payload = before + IAC_DONT_COM_PORT_OPT + IAC_DONT_COM_PORT_OPT + after
+    expected = before + after
+
+    assert telnet_recv(payload) == expected
+
+
+def test_subneg(telnet_recv):
+    before_pattern = make_pattern(1022)
+    after_pattern = make_pattern(20)
+    payload = before_pattern + IAC_SB + make_pattern(10) + IAC_SE + after_pattern
+
+    assert telnet_recv(payload) == before_pattern + after_pattern
+
+
+def test_subneg_escaped(telnet_recv):
+    before = b"before"
+    after = b"after"
+    # This is not supposed to terminate the subneg: IAC, IAC, SE, !
+    payload = before + IAC_SB + bytes([255, 255, 240, 33]) + IAC_SE + after
+
+    assert telnet_recv(payload) == before + after
+
+
+def test_only_commands(telnet_recv):
+    after_pattern = make_pattern(20)
+    payload = IAC_SB + make_pattern(1022) + IAC_SE + after_pattern
+
+    assert telnet_recv(payload) == after_pattern
+
+
+def test_subneg_special(telnet_recv):
+    before = b"before"
+    after = b"after"
+    # This is not supposed to terminate the subneg: IAC, 243, SE, !
+    payload = before + IAC_SB + bytes([255, 243, 240, 33]) + IAC_SE + after
+
+    assert telnet_recv(payload) == before + after

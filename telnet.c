@@ -18,6 +18,7 @@ struct telnet_ios {
 	struct ios_ops base;
 	unsigned char iac_buf[8];
 	ssize_t iac_buf_len;
+	bool iac_iac;
 };
 
 static int telnet_printf(struct ios_ops *ios, const char *format, ...)
@@ -56,7 +57,7 @@ static ssize_t telnet_write(struct ios_ops *ios, const unsigned char *buf, size_
 {
 	size_t handled = 0;
 	ssize_t ret;
-	unsigned char *iac;
+	const unsigned char *iac;
 
 	/*
 	 * To send an IAC character in the data stream, two IACs must be sent.
@@ -149,7 +150,11 @@ static ssize_t handle_iac(struct ios_ops *ios, unsigned char *buf, ssize_t buf_l
 
 	if (priv->iac_buf_len == 1) {
 		if (buf[consumed] == IAC) {
-			/* sequence was IAC, IAC, consume only one to produce literal IAC in output */
+			/*
+			 * sequence was IAC, IAC:
+			 * signal the caller to keep an IAC
+			 */
+			priv->iac_iac = true;
 			priv->iac_buf_len = 0;
 			return consumed;
 		} else if (buf[consumed] >= 240 && buf[consumed] <= 249) {
@@ -179,24 +184,20 @@ static ssize_t handle_iac(struct ios_ops *ios, unsigned char *buf, ssize_t buf_l
 		telnet_handle_triplet(priv->iac_buf[1], buf[consumed]);
 		priv->iac_buf_len = 0;
 		return consumed + 1;
-		consumed++;
 	} else if (priv->iac_buf[1] == SB) {
 		/* we're within a subneg, skip until IAC,SE that isn't preceeded by another IAC */
 		/* TODO: handle subneg content */
 		for (; consumed < buf_len; consumed++) {
-			if (buf[consumed] == IAC) {
-				if (priv->iac_buf_len == 2) {
-					priv->iac_buf[2] = buf[consumed];
-					priv->iac_buf_len++;
-				} else {
-					assert(priv->iac_buf[2] == IAC);
-					assert(priv->iac_buf_len == 3);
-					priv->iac_buf_len--;
-				}
-			} else if (priv->iac_buf_len == 3 && buf[consumed] == SE) {
-				priv->iac_buf_len = 0;
-				return consumed;
+			if (priv->iac_buf_len == 2 && buf[consumed] == IAC) {
+				priv->iac_buf[2] = buf[consumed];
+				priv->iac_buf_len++;
+				continue;
 			}
+			if (priv->iac_buf_len == 3 && buf[consumed] == SE) {
+				priv->iac_buf_len = 0;
+				return consumed + 1;
+			}
+			priv->iac_buf_len = 2;
 		}
 		return consumed;
 	}
@@ -207,6 +208,7 @@ static ssize_t handle_iac(struct ios_ops *ios, unsigned char *buf, ssize_t buf_l
 
 static ssize_t telnet_read(struct ios_ops *ios, unsigned char *buf, size_t count)
 {
+	struct telnet_ios *priv = (struct telnet_ios *)ios;
 	ssize_t ret;
 	unsigned char *iac;
 	size_t handled = 0;
@@ -216,16 +218,29 @@ static ssize_t telnet_read(struct ios_ops *ios, unsigned char *buf, size_t count
 	if (ret <= 0)
 		return ret;
 
-	/* possibly unfinished command sequence from previous buffer */
-	ret -= bufskip(buf, handle_iac(ios, buf, ret), ret);
-	while (++handled < ret) {
-		iac = memchr(buf + handled, IAC, ret - handled);
-		if (iac) {
-			handled = iac - buf;
-			ret -= bufskip(iac, handle_iac(ios, iac, ret - handled), ret - handled);
-		} else {
-			break;
+	while (handled < ret) {
+		ssize_t skip = handle_iac(ios, buf + handled, ret - handled);
+
+		ret -= bufskip(buf + handled, skip, ret - handled);
+
+		if (priv->iac_iac) {
+			/*
+			 * this is IAC,IAC keep one
+			 */
+			handled += 1;
+			priv->iac_iac = false;
 		}
+
+		iac = memchr(buf + handled, IAC, ret - handled);
+		if (!iac)
+			break;
+		handled = iac - buf;
+	}
+
+	if (ret == 0) {
+		/* read() yielded bytes but all were telnet commands, do not return 0 (EOF)! */
+		errno = EAGAIN;
+		return -1;
 	}
 	return ret;
 }
