@@ -64,8 +64,6 @@ struct ios_ops *telnet_init(char *hostport);
 struct ios_ops *serial_init(char *dev);
 struct ios_ops *can_init(char *interfaceid);
 
-void microcom_exit(int signal);
-
 void microcom_cmd_usage(char *str);
 
 void main_usage(int exitcode, char *str, char *dev);
